@@ -67,6 +67,8 @@ CleanupIntervalHours = 6
 [Util]
 
 [Util.Captcha]
+# Single-host all-in-one: no captcha on login
+Disable = true
 Length = 4
 Width = 400
 Height = 160

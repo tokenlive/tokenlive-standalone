@@ -45,6 +45,8 @@ make smoke        # 短暂启动并检查 health
 
 默认端口 **2525**。启动时强制 `DB_TYPE=sqlite3`，库文件 `data/tokenlive.db`（`-data-dir` 可改）。
 
+默认管理员：`admin` / `admin`（单机配置已 **禁用验证码**）。
+
 可选前端：
 
 ```bash
