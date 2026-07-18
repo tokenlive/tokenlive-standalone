@@ -80,14 +80,15 @@ Admin 捆绑配置：`configs/admin/`（不依赖环境里的 `DB_TYPE=mysql`）
 - `embed-api.md` — 库边界签名
 - `specs/*`
 
-## Homebrew / 本机安装
+## Homebrew / 本机服务
 
 见 [docs/homebrew.md](docs/homebrew.md)。
 
 ```bash
 ./scripts/brew-install-local.sh
-tokenlive-start
+brew services start tokenlive   # 或 tokenlive-start
 # http://127.0.0.1:2525  admin / admin
+brew services stop tokenlive    # 或 tokenlive-stop
 ```
 
 ## 状态

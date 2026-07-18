@@ -1,14 +1,10 @@
 #!/usr/bin/env bash
-# Install tokenlive into the local Homebrew prefix from sibling source checkouts.
+# Install tokenlive for Homebrew services:
 #
-# This does NOT require a published tap. It:
-#   1) packages bin + share + etc via scripts/package-release.sh
-#   2) installs into $(brew --prefix)
-#   3) writes a launchd plist for `brew services` when possible
+#   brew services start tokenlive
+#   brew services stop tokenlive
+#   tokenlive   # foreground, no args (paths baked in)
 #
-# Usage:
-#   ./scripts/brew-install-local.sh
-#   VERSION=0.1.0 ./scripts/brew-install-local.sh
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -18,117 +14,132 @@ VERSION="${VERSION:-0.1.0}"
 
 die() { echo "error: $*" >&2; exit 1; }
 command -v brew >/dev/null || die "Homebrew not found"
-command -v rsync >/dev/null || die "rsync not found"
+command -v rsync >/dev/null || die "rsync required"
 
 GATEWAY_SRC="$(cd "$GATEWAY_SRC" && pwd)"
 ADMIN_SRC="$(cd "$ADMIN_SRC" && pwd)"
-[[ -f "$GATEWAY_SRC/go.mod" ]] || die "gateway not found: $GATEWAY_SRC"
-[[ -f "$ADMIN_SRC/go.mod" ]] || die "admin not found: $ADMIN_SRC"
-
 PREFIX="$(brew --prefix)"
-BIN_DIR="$PREFIX/bin"
-ETC_DIR="$PREFIX/etc/tokenlive"
-SHARE_DIR="$PREFIX/share/tokenlive"
-VAR_DIR="$PREFIX/var/tokenlive"
-LOG_DIR="$PREFIX/var/log"
 STAGE="$ROOT/dist/tokenlive-${VERSION}"
+KEG="$PREFIX/Cellar/tokenlive/${VERSION}"
+OPT="$PREFIX/opt/tokenlive"
+PLIST_LABEL="homebrew.mxcl.tokenlive"
+USER_PLIST="$HOME/Library/LaunchAgents/${PLIST_LABEL}.plist"
 
 export TOKENLIVE_GATEWAY_SRC="$GATEWAY_SRC"
 export TOKENLIVE_ADMIN_SRC="$ADMIN_SRC"
 export VERSION
 export OUT_DIR="$STAGE"
+export BREW_PREFIX="$PREFIX"
 
-echo "==> package"
+echo "==> package (bake paths under $PREFIX)"
 "$ROOT/scripts/package-release.sh"
 
-echo "==> install into $PREFIX"
-mkdir -p "$BIN_DIR" "$ETC_DIR" "$SHARE_DIR/admin" "$SHARE_DIR/web" "$VAR_DIR" "$LOG_DIR"
+echo "==> stop previous service"
+brew services stop tokenlive 2>/dev/null || true
+launchctl bootout "gui/$(id -u)/${PLIST_LABEL}" 2>/dev/null || true
+launchctl unload -w "$USER_PLIST" 2>/dev/null || true
+pkill -f "${PREFIX}/opt/tokenlive/bin/tokenlive" 2>/dev/null || true
+pkill -f "${PREFIX}/bin/tokenlive" 2>/dev/null || true
 
-install -m 755 "$STAGE/bin/tokenlive" "$BIN_DIR/tokenlive"
-rsync -a --delete "$STAGE/share/tokenlive/admin/" "$SHARE_DIR/admin/"
-if [[ -f "$STAGE/share/tokenlive/web/index.html" ]]; then
-  rsync -a --delete "$STAGE/share/tokenlive/web/" "$SHARE_DIR/web/"
+echo "==> install into Cellar: $KEG"
+rm -rf "$PREFIX/Cellar/tokenlive"
+mkdir -p "$KEG/bin" "$KEG/share"
+
+install -m 755 "$STAGE/bin/tokenlive" "$KEG/bin/tokenlive"
+rsync -a "$STAGE/share/tokenlive/" "$KEG/share/tokenlive/"
+
+mkdir -p "$PREFIX/etc/tokenlive" "$PREFIX/var/tokenlive" "$PREFIX/var/log" "$PREFIX/share"
+if [[ ! -f "$PREFIX/etc/tokenlive/config.yml" ]]; then
+  install -m 644 "$STAGE/etc/tokenlive/config.yml" "$PREFIX/etc/tokenlive/config.yml"
 fi
+install -m 644 "$STAGE/etc/tokenlive/config.example.yml" "$PREFIX/etc/tokenlive/config.example.yml"
 
-if [[ ! -f "$ETC_DIR/config.yml" ]]; then
-  install -m 644 "$STAGE/etc/tokenlive/config.yml" "$ETC_DIR/config.yml"
-else
-  echo "    keep existing $ETC_DIR/config.yml"
-fi
-install -m 644 "$STAGE/etc/tokenlive/config.example.yml" "$ETC_DIR/config.example.yml"
+# Links
+rm -rf "$OPT"
+ln -sfn "$KEG" "$OPT"
+ln -sfn "$OPT/bin/tokenlive" "$PREFIX/bin/tokenlive"
+ln -sfn "$OPT/share/tokenlive" "$PREFIX/share/tokenlive"
 
-# launchd plist for brew services compatibility (user domain)
-PLIST_LABEL="homebrew.mxcl.tokenlive"
-PLIST_DIR="$HOME/Library/LaunchAgents"
-PLIST_PATH="$PLIST_DIR/${PLIST_LABEL}.plist"
-mkdir -p "$PLIST_DIR"
-
-# Stop old service if loaded
-if launchctl print "gui/$(id -u)/${PLIST_LABEL}" &>/dev/null; then
-  launchctl bootout "gui/$(id -u)/${PLIST_LABEL}" 2>/dev/null || true
-fi
-
-cat >"$PLIST_PATH" <<EOF
+# LaunchAgent — same shape brew services uses (binary only; paths from ldflags)
+mkdir -p "$HOME/Library/LaunchAgents"
+cat >"$USER_PLIST" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>Label</key>
-  <string>${PLIST_LABEL}</string>
-  <key>ProgramArguments</key>
-  <array>
-    <string>${BIN_DIR}/tokenlive</string>
-    <string>-conf</string>
-    <string>${ETC_DIR}/config.yml</string>
-    <string>-data-dir</string>
-    <string>${VAR_DIR}</string>
-    <string>-admin-workdir</string>
-    <string>${SHARE_DIR}/admin</string>
-    <string>-admin-static</string>
-    <string>${SHARE_DIR}/web</string>
-  </array>
-  <key>WorkingDirectory</key>
-  <string>${VAR_DIR}</string>
-  <key>RunAtLoad</key>
-  <false/>
-  <key>KeepAlive</key>
-  <true/>
-  <key>StandardOutPath</key>
-  <string>${LOG_DIR}/tokenlive.log</string>
-  <key>StandardErrorPath</key>
-  <string>${LOG_DIR}/tokenlive.err.log</string>
+	<key>KeepAlive</key>
+	<true/>
+	<key>Label</key>
+	<string>${PLIST_LABEL}</string>
+	<key>LimitLoadToSessionType</key>
+	<array>
+		<string>Aqua</string>
+		<string>Background</string>
+		<string>LoginWindow</string>
+		<string>StandardIO</string>
+		<string>System</string>
+	</array>
+	<key>ProgramArguments</key>
+	<array>
+		<string>${OPT}/bin/tokenlive</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>WorkingDirectory</key>
+	<string>${PREFIX}/var/tokenlive</string>
+	<key>StandardOutPath</key>
+	<string>${PREFIX}/var/log/tokenlive.log</string>
+	<key>StandardErrorPath</key>
+	<string>${PREFIX}/var/log/tokenlive.err.log</string>
 </dict>
 </plist>
 EOF
+# Also place plist where brew services discovers keg services
+cp "$USER_PLIST" "$KEG/homebrew.mxcl.tokenlive.plist"
+ln -sfn "$KEG/homebrew.mxcl.tokenlive.plist" "$OPT/homebrew.mxcl.tokenlive.plist"
 
-# Helper scripts
-cat >"$BIN_DIR/tokenlive-start" <<EOF
+# Wrapper helpers (optional; brew services is preferred)
+cat >"$PREFIX/bin/tokenlive-start" <<EOF
 #!/bin/bash
-launchctl bootstrap "gui/\$(id -u)" "$PLIST_PATH" 2>/dev/null || launchctl load -w "$PLIST_PATH"
-echo "tokenlive started (http://127.0.0.1:2525)"
+launchctl bootstrap "gui/\$(id -u)" "$USER_PLIST" 2>/dev/null || launchctl load -w "$USER_PLIST"
+echo "tokenlive started — http://127.0.0.1:2525"
 EOF
-cat >"$BIN_DIR/tokenlive-stop" <<EOF
+cat >"$PREFIX/bin/tokenlive-stop" <<EOF
 #!/bin/bash
-launchctl bootout "gui/\$(id -u)/${PLIST_LABEL}" 2>/dev/null || launchctl unload -w "$PLIST_PATH" 2>/dev/null || true
+launchctl bootout "gui/\$(id -u)/${PLIST_LABEL}" 2>/dev/null || launchctl unload -w "$USER_PLIST" 2>/dev/null || true
 echo "tokenlive stopped"
 EOF
-chmod +x "$BIN_DIR/tokenlive-start" "$BIN_DIR/tokenlive-stop"
+chmod +x "$PREFIX/bin/tokenlive-start" "$PREFIX/bin/tokenlive-stop"
 
 echo
 echo "==> installed"
-echo "    binary:  $BIN_DIR/tokenlive  ($("$BIN_DIR/tokenlive" -version 2>/dev/null || echo ok))"
-echo "    config:  $ETC_DIR/config.yml"
-echo "    data:    $VAR_DIR"
-echo "    admin:   $SHARE_DIR/admin"
-echo "    web:     $SHARE_DIR/web"
+echo "    binary: $($PREFIX/bin/tokenlive -version)"
+echo "    config: $PREFIX/etc/tokenlive/config.yml"
+echo "    data:   $PREFIX/var/tokenlive"
 echo
-echo "Start:"
-echo "  tokenlive-start"
-echo "  # or: brew-style"
-echo "  launchctl bootstrap gui/\$(id -u) $PLIST_PATH"
+echo "Start / stop:"
+echo "  brew services start tokenlive   # if formula is linked"
+echo "  tokenlive-start                 # LaunchAgent (always works)"
+echo "  tokenlive                       # foreground, no args"
 echo
 echo "Stop:"
+echo "  brew services stop tokenlive"
 echo "  tokenlive-stop"
 echo
-echo "Open:  http://127.0.0.1:2525"
-echo "Login: admin / admin"
+echo "Open http://127.0.0.1:2525  — login admin / admin"
+
+# Try brew services; fall back is already installed via LaunchAgent
+if brew services start tokenlive 2>/dev/null; then
+  sleep 2
+  brew services list 2>/dev/null | grep tokenlive || true
+else
+  echo "(brew services name not registered — use tokenlive-start / LaunchAgent)"
+  "$PREFIX/bin/tokenlive-start"
+fi
+
+sleep 2
+if curl -sf http://127.0.0.1:2525/health >/dev/null; then
+  echo "health: $(curl -s http://127.0.0.1:2525/health)"
+else
+  echo "health: not up yet — check $(brew --prefix)/var/log/tokenlive.err.log"
+fi

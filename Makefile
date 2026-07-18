@@ -51,9 +51,15 @@ smoke: build
 package:
 	VERSION=$(VERSION) ./scripts/package-release.sh
 
-# Install into local Homebrew prefix from sibling sources
+# Local Homebrew-style install + LaunchAgent / brew services
 brew-install:
 	./scripts/brew-install-local.sh
 
 brew-uninstall:
 	./scripts/brew-uninstall-local.sh
+
+brew-start:
+	@brew services start tokenlive 2>/dev/null || tokenlive-start
+
+brew-stop:
+	@brew services stop tokenlive 2>/dev/null || tokenlive-stop

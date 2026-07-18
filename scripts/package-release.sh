@@ -1,13 +1,9 @@
 #!/usr/bin/env bash
-# Build a release-ready tokenlive binary + share assets for Homebrew / tarball.
+# Build tokenlive binary + share assets for Homebrew / tarball install.
 #
-# Expects sibling checkouts (or overrides):
-#   TOKENLIVE_GATEWAY_SRC  default: ../tokenlive-gateway
-#   TOKENLIVE_ADMIN_SRC    default: ../tokenlive-admin
-#
-# Usage:
-#   ./scripts/package-release.sh
-#   VERSION=0.1.0 ./scripts/package-release.sh
+# TOKENLIVE_GATEWAY_SRC / TOKENLIVE_ADMIN_SRC — sibling modules
+# BREW_PREFIX — if set, bake default paths into the binary
+# VERSION / OUT_DIR / SKIP_WEB / FORCE_WEB_BUILD
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -18,14 +14,12 @@ OUT_DIR="${OUT_DIR:-$ROOT/dist/tokenlive-${VERSION}}"
 GATEWAY_SRC="${TOKENLIVE_GATEWAY_SRC:-$ROOT/../tokenlive-gateway}"
 ADMIN_SRC="${TOKENLIVE_ADMIN_SRC:-$ROOT/../tokenlive-admin}"
 SKIP_WEB="${SKIP_WEB:-0}"
+BREW_PREFIX="${BREW_PREFIX:-}"
 
 die() { echo "error: $*" >&2; exit 1; }
 
-[[ -d "$GATEWAY_SRC" ]] || die "gateway source not found: $GATEWAY_SRC"
-[[ -d "$ADMIN_SRC" ]] || die "admin source not found: $ADMIN_SRC"
-[[ -f "$GATEWAY_SRC/go.mod" ]] || die "invalid gateway module: $GATEWAY_SRC"
-[[ -f "$ADMIN_SRC/go.mod" ]] || die "invalid admin module: $ADMIN_SRC"
-
+[[ -f "$GATEWAY_SRC/go.mod" ]] || die "gateway not found: $GATEWAY_SRC"
+[[ -f "$ADMIN_SRC/go.mod" ]] || die "admin not found: $ADMIN_SRC"
 GATEWAY_SRC="$(cd "$GATEWAY_SRC" && pwd)"
 ADMIN_SRC="$(cd "$ADMIN_SRC" && pwd)"
 
@@ -33,19 +27,16 @@ echo "==> packaging tokenlive ${VERSION}"
 echo "    gateway: $GATEWAY_SRC"
 echo "    admin:   $ADMIN_SRC"
 echo "    out:     $OUT_DIR"
+[[ -n "$BREW_PREFIX" ]] && echo "    brew:    $BREW_PREFIX (bake defaults)"
 
 rm -rf "$OUT_DIR"
 mkdir -p "$OUT_DIR/bin" "$OUT_DIR/share/tokenlive/admin" "$OUT_DIR/share/tokenlive/web" "$OUT_DIR/etc/tokenlive"
 
-# Frontend
 if [[ "$SKIP_WEB" != "1" && -f "$ADMIN_SRC/frontend/package.json" ]]; then
   if [[ ! -f "$ADMIN_SRC/frontend/dist/index.html" ]] || [[ "${FORCE_WEB_BUILD:-0}" == "1" ]]; then
     echo "==> building admin frontend"
-    (
-      cd "$ADMIN_SRC/frontend"
-      if [[ ! -d node_modules ]]; then
-        npm ci
-      fi
+    ( cd "$ADMIN_SRC/frontend"
+      [[ -d node_modules ]] || npm ci
       npm run build:prod
     )
   else
@@ -55,29 +46,39 @@ fi
 if [[ -f "$ADMIN_SRC/frontend/dist/index.html" ]]; then
   rsync -a --delete "$ADMIN_SRC/frontend/dist/" "$OUT_DIR/share/tokenlive/web/"
 else
-  echo "warn: no frontend dist; package will run without console UI" >&2
+  echo "warn: no frontend dist" >&2
 fi
 
-# Admin runtime configs (toml + menu + casbin)
 rsync -a "$ROOT/configs/admin/" "$OUT_DIR/share/tokenlive/admin/"
-
-# Default gateway config for brew
 cp "$ROOT/config/brew.yml" "$OUT_DIR/etc/tokenlive/config.yml"
 cp "$ROOT/config/all-in-one.example.yml" "$OUT_DIR/etc/tokenlive/config.example.yml"
 
-# Build with temporary replace (do not dirty caller's go.mod permanently)
 BUILD_DIR="$(mktemp -d "${TMPDIR:-/tmp}/tokenlive-build.XXXXXX")"
-cleanup() { rm -rf "$BUILD_DIR"; }
-trap cleanup EXIT
+trap 'rm -rf "$BUILD_DIR"' EXIT
 
-echo "==> staging sources in $BUILD_DIR"
-rsync -a \
-  --exclude '.git' \
-  --exclude 'bin' \
-  --exclude 'data' \
-  --exclude 'dist' \
-  --exclude 'node_modules' \
+rsync -a --exclude '.git' --exclude 'bin' --exclude 'data' --exclude 'dist' --exclude 'node_modules' \
   "$ROOT/" "$BUILD_DIR/"
+
+if [[ -n "$BREW_PREFIX" ]]; then
+  DEFAULT_CONF="${BREW_PREFIX}/etc/tokenlive/config.yml"
+  DEFAULT_DATA="${BREW_PREFIX}/var/tokenlive"
+  DEFAULT_ADMIN="${BREW_PREFIX}/share/tokenlive/admin"
+  DEFAULT_WEB="${BREW_PREFIX}/share/tokenlive/web"
+else
+  DEFAULT_CONF=""
+  DEFAULT_DATA=""
+  DEFAULT_ADMIN=""
+  DEFAULT_WEB=""
+fi
+
+LDFLAGS=(
+  -s -w
+  "-X main.version=${VERSION}"
+)
+[[ -n "$DEFAULT_CONF" ]] && LDFLAGS+=("-X main.DefaultConfigPath=${DEFAULT_CONF}")
+[[ -n "$DEFAULT_DATA" ]] && LDFLAGS+=("-X main.DefaultDataDir=${DEFAULT_DATA}")
+[[ -n "$DEFAULT_ADMIN" ]] && LDFLAGS+=("-X main.DefaultAdminWorkDir=${DEFAULT_ADMIN}")
+[[ -n "$DEFAULT_WEB" ]] && LDFLAGS+=("-X main.DefaultAdminStatic=${DEFAULT_WEB}")
 
 (
   cd "$BUILD_DIR"
@@ -85,17 +86,11 @@ rsync -a \
   go mod edit -replace="github.com/tokenlive/tokenlive-admin=${ADMIN_SRC}"
   go mod tidy
   echo "==> go build"
-  LDFLAGS="-s -w -X main.version=${VERSION}"
-  go build -ldflags="$LDFLAGS" -o "bin/tokenlive" ./cmd/tokenlive
+  go build -ldflags="${LDFLAGS[*]}" -o "bin/tokenlive" ./cmd/tokenlive
   cp bin/tokenlive "$OUT_DIR/bin/tokenlive"
 )
 
-(
-  cd "$OUT_DIR/bin"
-  shasum -a 256 tokenlive > tokenlive.sha256
-)
-
-# Also copy binary to repo bin/ for convenience
+( cd "$OUT_DIR/bin" && shasum -a 256 tokenlive > tokenlive.sha256 )
 mkdir -p "$ROOT/bin"
 cp "$OUT_DIR/bin/tokenlive" "$ROOT/bin/tokenlive"
 

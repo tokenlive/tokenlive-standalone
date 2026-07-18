@@ -14,17 +14,28 @@ import (
 	"github.com/tokenlive/tokenlive-standalone/internal/assemble"
 )
 
-// Set via -ldflags "-X main.version=..."
-var version = "dev"
+// Build-time defaults (Homebrew / package-release via -ldflags -X).
+// When set, `tokenlive` needs no CLI args for conf/data/admin/web paths.
+var (
+	version             = "dev"
+	DefaultConfigPath   = ""
+	DefaultDataDir      = ""
+	DefaultAdminWorkDir = ""
+	DefaultAdminStatic  = ""
+)
 
 func main() {
 	showVersion := flag.Bool("version", false, "print version and exit")
-	confPath := flag.String("conf", "config/all-in-one.example.yml", "gateway-side YAML config")
-	adminWorkDir := flag.String("admin-workdir", "", "admin configs workdir (default: ./configs/admin)")
-	// When using bundled configs/admin, leave empty (load all toml in workdir).
-	adminConfigs := flag.String("admin-config", "", "admin config subset under workdir (empty = all files in workdir)")
+
+	defaultConf := firstNonEmpty(DefaultConfigPath, "config/all-in-one.example.yml")
+	defaultData := firstNonEmpty(DefaultDataDir, "data")
+	defaultAdminWD := firstNonEmpty(DefaultAdminWorkDir, "configs/admin")
+
+	confPath := flag.String("conf", defaultConf, "gateway-side YAML config")
+	adminWorkDir := flag.String("admin-workdir", "", "admin configs workdir (default: build-time path or ./configs/admin)")
+	adminConfigs := flag.String("admin-config", "", "admin config subset under workdir (empty = auto)")
 	adminStatic := flag.String("admin-static", "", "admin SPA static dir (optional)")
-	dataDir := flag.String("data-dir", "data", "mutable data directory (sqlite, logs)")
+	dataDir := flag.String("data-dir", defaultData, "mutable data directory (sqlite, logs)")
 	flag.Parse()
 
 	if *showVersion {
@@ -43,22 +54,25 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Force SQLite for all-in-one so ambient DB_TYPE=mysql / path-like DB_DSN cannot break startup.
+	// Force SQLite for all-in-one so ambient DB_TYPE=mysql cannot break startup.
 	dbPath := filepath.Join(*dataDir, "tokenlive.db")
 	_ = os.Setenv("DB_TYPE", "sqlite3")
 	_ = os.Setenv("DB_DSN", dbPath)
+
+	// Resolve log path under data-dir when using relative log_file_name from brew config.
+	if rel := v.GetString("log.log_file_name"); rel != "" && !filepath.IsAbs(rel) {
+		v.Set("log.log_file_name", filepath.Join(*dataDir, rel))
+	}
 
 	workDir := *adminWorkDir
 	if workDir == "" {
 		workDir = os.Getenv("TOKENLIVE_ADMIN_WORKDIR")
 	}
 	if workDir == "" {
-		workDir = "configs/admin"
+		workDir = defaultAdminWD
 	}
 
 	adminCfg := *adminConfigs
-	// Bundled layout: configs/admin/conf/*.toml + menu.json at workdir root.
-	// Sibling tokenlive-admin: workdir=.../configs, subset=dev.
 	if adminCfg == "" {
 		switch {
 		case dirExists(filepath.Join(workDir, "conf")):
@@ -85,6 +99,12 @@ func main() {
 
 	staticDir := *adminStatic
 	if staticDir == "" {
+		staticDir = os.Getenv("TOKENLIVE_ADMIN_STATIC")
+	}
+	if staticDir == "" {
+		staticDir = DefaultAdminStatic
+	}
+	if staticDir == "" {
 		staticDir = assemble.DetectAdminStaticDir()
 	}
 
@@ -102,9 +122,9 @@ func main() {
 	defer app.Close(context.Background())
 
 	if staticDir != "" {
-		fmt.Fprintf(os.Stderr, "tokenlive all-in-one listening on http://%s:%d (console SPA: %s)\n", host, port, staticDir)
+		fmt.Fprintf(os.Stderr, "tokenlive %s listening on http://%s:%d (console SPA: %s)\n", version, host, port, staticDir)
 	} else {
-		fmt.Fprintf(os.Stderr, "tokenlive all-in-one listening on http://%s:%d (no SPA — open / for setup hints, or pass -admin-static)\n", host, port)
+		fmt.Fprintf(os.Stderr, "tokenlive %s listening on http://%s:%d (no SPA)\n", version, host, port)
 	}
 	if err := app.ListenAndServe(ctx); err != nil && err != context.Canceled {
 		fmt.Fprintf(os.Stderr, "server error: %v\n", err)
@@ -115,4 +135,13 @@ func main() {
 func dirExists(p string) bool {
 	st, err := os.Stat(p)
 	return err == nil && st.IsDir()
+}
+
+func firstNonEmpty(vals ...string) string {
+	for _, v := range vals {
+		if v != "" {
+			return v
+		}
+	}
+	return ""
 }
