@@ -78,19 +78,20 @@ tokenlive-admin       -x->  tokenlive-gateway / standalone   # 分部署下 admi
 
 ### D3: Library embed surface（主线小改）
 
-**Gateway 应导出（名称可调整）：**
+详见同目录 **`embed-api.md`**（签名与版本钉扎）。
 
-- 构建 Engine / Wire 子集的工厂（配置、Redis 可选、ClickHouse 可选）。
-- `RegisterLLMRoutes(r gin.IRoutes, deps)` 或等价。
-- `Engine.UpdateConfig` / Provider 替换钩子，供 ConfigHub 热更新。
-- `GatewayProvider` 接口保持；新增或允许注入 `Embedded` 实现（实现可放 **standalone**，只要满足接口）。
+**Gateway（已落地初版）：**
 
-**Admin 应导出：**
+- 包 `pkg/gateway`：`New` / `RegisterGin` / `UpdateEngineConfig` / `PurgeAPIKeyCache`。
+- 组装逻辑下沉 `internal/bootstrap`；`cmd/server/wire` 薄委托。
+- `Options.Provider` 注入 Embedded（实现在 standalone）。
 
-- `RegisterAdmin(r *gin.Engine, deps)`：挂 `/api/v1`、中间件、Casbin。
+**Admin 应导出（待做）：**
+
+- 包 `adminapp`：`New` / `Register` / `Shutdown`；挂 `/api/v1`、中间件、Casbin。
 - DB Open + AutoMigrate + 默认管理员 seed。
-- SPA 静态资源：admin 提供 `embed.FS` 或构建产物路径约定；standalone 负责挂载。
-- **写路径钩子**：模型/策略/API Key 变更后回调 `OnConfigChanged`（接口由 standalone 注入），避免 admin import gateway。
+- SPA：StaticDir 或后续 `embed.FS`。
+- **写路径钩子**：`OnConfigChanged(kind, keys...)`，admin 不 import gateway。
 
 ### D4: Embedded 与 ConfigHub 放在 standalone
 
