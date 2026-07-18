@@ -6,8 +6,8 @@ require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
-	github.com/tokenlive/tokenlive-admin v0.0.0-00010101000000-000000000000
-	github.com/tokenlive/tokenlive-gateway v0.0.0-00010101000000-000000000000
+	github.com/tokenlive/tokenlive-admin v0.1.0
+	github.com/tokenlive/tokenlive-gateway v0.1.0
 )
 
 require (
@@ -192,8 +192,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
-
-// Local development pins — remove before release; require published tags instead.
-replace github.com/tokenlive/tokenlive-gateway => ../tokenlive-gateway
-
-replace github.com/tokenlive/tokenlive-admin => ../tokenlive-admin
