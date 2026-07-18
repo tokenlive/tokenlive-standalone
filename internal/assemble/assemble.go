@@ -9,23 +9,21 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"github.com/tokenlive/tokenlive-admin/adminapp"
-	"github.com/tokenlive/tokenlive-gateway/pkg/config"
 	"github.com/tokenlive/tokenlive-gateway/pkg/gateway"
 	"github.com/tokenlive/tokenlive-gateway/pkg/log"
+	"github.com/tokenlive/tokenlive-standalone/internal/bridge"
+	"github.com/tokenlive/tokenlive-standalone/internal/confighub"
 )
 
 // Options configures the all-in-one process.
 type Options struct {
-	// GatewayConf is the viper tree for tokenlive-gateway (YAML).
 	GatewayConf *viper.Viper
 	Logger      *log.Logger
 
-	// Admin embed options (TOML workdir/configs under admin tree).
 	AdminWorkDir   string
 	AdminConfigs   string
 	AdminStaticDir string
 
-	// HTTP listen (overrides gateway http.* if set).
 	Host string
 	Port int
 }
@@ -35,6 +33,7 @@ type App struct {
 	Engine  *gin.Engine
 	Gateway *gateway.Gateway
 	Admin   *adminapp.App
+	Hub     *confighub.Hub
 
 	host string
 	port int
@@ -54,8 +53,7 @@ func ValidateAllInOne(v *viper.Viper) error {
 	return nil
 }
 
-// New builds Gin + Admin + Gateway. Does not listen.
-// OnConfigChanged currently purges API key cache; full ConfigHub reload is TODO.
+// New builds Gin + Admin + ConfigHub + Gateway. Does not listen.
 func New(ctx context.Context, opt Options) (*App, error) {
 	if opt.GatewayConf == nil {
 		return nil, fmt.Errorf("assemble: GatewayConf is nil")
@@ -79,7 +77,6 @@ func New(ctx context.Context, opt Options) (*App, error) {
 	if opt.Host == "" {
 		opt.Host = "127.0.0.1"
 	}
-
 	if opt.AdminWorkDir == "" {
 		opt.AdminWorkDir = "configs"
 	}
@@ -95,20 +92,19 @@ func New(ctx context.Context, opt Options) (*App, error) {
 
 	app := &App{Engine: r, host: opt.Host, port: opt.Port}
 
-	// Admin first so /api/v1 is registered; gateway owns /v1.
+	// 1) Admin (DB + routes). Callback wired after hub exists.
+	var hub *confighub.Hub
 	adminApp, err := adminapp.New(ctx, adminapp.Options{
 		WorkDir:   opt.AdminWorkDir,
 		Configs:   opt.AdminConfigs,
 		StaticDir: opt.AdminStaticDir,
 		Engine:    r,
 		OnConfigChanged: func(ctx context.Context, kind string, keys ...string) {
-			// Placeholder until ConfigHub lands: purge API key cache on apikey changes.
-			if app.Gateway == nil {
+			if hub == nil || app.Gateway == nil {
 				return
 			}
-			switch kind {
-			case "apikeys", "all":
-				app.Gateway.PurgeAPIKeyCache()
+			if err := hub.Refresh(ctx, kind); err != nil {
+				return
 			}
 		},
 	})
@@ -117,13 +113,40 @@ func New(ctx context.Context, opt Options) (*App, error) {
 	}
 	app.Admin = adminApp
 
-	// Provider: for now use gateway default from conf; Embedded provider replaces this in confighub work.
-	// config_source=embedded is validated but ProvideGatewayProvider does not yet know "embedded" —
-	// inject a no-op redis provider so New succeeds; real embedded store is next task.
-	provider := config.NewRedisGatewayProviderWithAPIKeyPepper(nil, opt.GatewayConf.GetString("llm.api_key_pepper"))
+	// 2) ConfigHub from admin DB snapshot
+	hub = confighub.New(&bridge.AdminSnapshotSource{Admin: adminApp})
+	app.Hub = hub
 
+	// Initial load (empty DB is ok — empty config/keys)
+	if err := hub.Refresh(ctx, "all"); err != nil {
+		// Soft-fail: keep YAML seed models so Engine can start; host can retry after seeding admin.
+		opt.Logger.Logger.Sugar().Warnf("confighub initial refresh: %v (using YAML seed until admin has data)", err)
+	}
+
+	hub.OnReload = func(ctx context.Context, kind string) {
+		if app.Gateway == nil {
+			return
+		}
+		switch kind {
+		case "endpoints", "all":
+			if cfg := hub.GatewayConfig(); cfg != nil && len(cfg.Models) > 0 {
+				_ = app.Gateway.ApplyGatewayConfig(cfg)
+			}
+			app.Gateway.PurgeAPIKeyCache()
+			app.Gateway.PurgePolicyCache()
+		case "policies":
+			app.Gateway.PurgePolicyCache()
+		case "apikeys":
+			app.Gateway.PurgeAPIKeyCache()
+		default:
+			app.Gateway.PurgeAPIKeyCache()
+			app.Gateway.PurgePolicyCache()
+		}
+	}
+
+	// 3) Gateway with embedded provider
 	gw, cleanup, err := gateway.New(opt.GatewayConf, opt.Logger, &gateway.Options{
-		Provider:       provider,
+		Provider:       hub.Provider(),
 		SkipClickHouse: true,
 	})
 	if err != nil {
@@ -133,6 +156,13 @@ func New(ctx context.Context, opt Options) (*App, error) {
 	app.Gateway = gw
 	app.gwCleanup = cleanup
 	gw.RegisterGin(r)
+
+	// Apply admin snapshot to engine if we have models
+	if cfg := hub.GatewayConfig(); cfg != nil && len(cfg.Models) > 0 {
+		if err := gw.ApplyGatewayConfig(cfg); err != nil {
+			opt.Logger.Logger.Sugar().Warnf("apply embedded config: %v", err)
+		}
+	}
 
 	return app, nil
 }

@@ -56,6 +56,13 @@ gw.Config   *config.ConfigManager
 
 **Embedded provider**：实现放在 **standalone**（`internal/confighub`），满足 `config.GatewayProvider`，经 `Options.Provider` 注入。Gateway 不依赖 standalone。
 
+**热更新（已落地）**：
+
+- `gateway.ApplyGatewayConfig(*config.GatewayConfig)` — 等同 HTTP poller 路径
+- `gateway.PurgePolicyCache()` / `PurgeAPIKeyCache()`
+- Admin：`adminapp.LoadGatewaySnapshot` → JSON 快照（config/policies/apikeys）
+- Standalone：`OnConfigChanged` → `confighub.Refresh` → Apply/Purge
+
 ## 4. Admin embed API
 
 **包**：`github.com/tokenlive/tokenlive-admin/adminapp`

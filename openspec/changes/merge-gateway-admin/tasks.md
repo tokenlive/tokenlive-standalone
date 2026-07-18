@@ -27,7 +27,7 @@
 - [x] 4.1 Create repo scaffold: `cmd/tokenlive`, `internal/assemble`, `internal/confighub`, `internal/bridge`, `config/`
 - [x] 4.2 `go.mod` require gateway + admin; dev `replace` for local paths (tags when released)
 - [x] 4.3 Implement assemble: one Gin, register LLM + Admin + health → `internal/assemble`
-- [ ] 4.4 Implement ConfigHub + EmbeddedGatewayProvider + bridge from admin hooks
+- [x] 4.4 Implement ConfigHub + EmbeddedGatewayProvider + bridge from admin hooks → `internal/confighub` + `bridge` + `adminapp.LoadGatewaySnapshot`
 - [x] 4.5 Startup validation: all-in-one only; require `embedded`; fail-fast otherwise
 - [x] 4.6 All-in-one YAML example → `config/all-in-one.example.yml`
 - [x] 4.7 Atomic graceful shutdown → `App.ListenAndServe` + `Close`
