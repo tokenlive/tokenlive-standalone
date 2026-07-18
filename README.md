@@ -1,105 +1,125 @@
-# tokenlive-standalone
+# TokenLive Standalone
 
-TokenLive **All-in-one** 组装仓：单进程同时运行 Gateway（LLM 代理）与 Admin（控制台）。
+English | [中文版](./README-zh.md)
 
-## 两种部署形态
+> All-in-one LLM API gateway + admin console in a single binary.
 
-| 形态 | 仓库 / 制品 | 说明 |
-|------|-------------|------|
-| **分部署（主线）** | [tokenlive-gateway](https://github.com/tokenlive/tokenlive-gateway) + [tokenlive-admin](https://github.com/tokenlive/tokenlive-admin) | 生产 / 多实例推荐 |
-| **All-in-one（本仓）** | `tokenlive` 二进制 | 单机 / Homebrew；**Gateway + Admin 必须同时启用** |
+[![Go Version](https://img.shields.io/badge/Go-1.24+-00ADD8?style=flat&logo=go)](https://golang.org)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
-本仓 **不** 替代主线双进程部署。
+## Deployment Modes
 
-## 架构（简）
+| Mode | Repos / Artifacts | Best for |
+|------|-------------------|----------|
+| **Separate (primary)** | [tokenlive-gateway](https://github.com/tokenlive/tokenlive-gateway) + [tokenlive-admin](https://github.com/tokenlive/tokenlive-admin) | Production, multi-instance |
+| **All-in-one (this repo)** | `tokenlive` binary | Single-host / Homebrew |
 
+This repo does **not** replace the primary dual-process deployment. Both Gateway and Admin must run together.
+
+## Install
+
+### Homebrew (macOS)
+
+```bash
+brew tap tokenlive/tokenlive
+brew install tokenlive
+brew services start tokenlive
+# http://127.0.0.1:2525  —  admin / admin
 ```
-tokenlive (本仓)
-  ├─ adminapp (tokenlive-admin)  → /api/v1 + SPA
-  ├─ confighub                   → Embedded GatewayProvider
-  └─ pkg/gateway (tokenlive-gateway) → /v1/* Engine
+
+Stop: `brew services stop tokenlive`
+
+Uninstall:
+
+```bash
+brew uninstall tokenlive
+brew untap tokenlive/tokenlive
 ```
 
-Admin 写库 → `OnConfigChanged` → ConfigHub 刷新 → `ApplyGatewayConfig` / 清缓存。
+Details: [docs/homebrew.md](docs/homebrew.md)
 
-## 本地开发
+### From Source
 
-前置：与本仓同级 checkout：
+Prerequisites: sibling checkouts at the same level.
 
 ```
 Projects/
   tokenlive-gateway/
   tokenlive-admin/
-  tokenlive-standalone/   # 本仓
+  tokenlive-standalone/   # this repo
 ```
-
-`go.mod` 使用 `replace` 指向本地两库（发版前改为 tag）。
 
 ```bash
 go mod tidy
-make test
-make run          # 或 ./scripts/dev-run.sh
-curl -s http://127.0.0.1:2525/health
-make smoke        # 短暂启动并检查 health
+make run          # http://127.0.0.1:2525
+make smoke        # start briefly and check health
 ```
 
-默认端口 **2525**。启动时强制 `DB_TYPE=sqlite3`，库文件 `data/tokenlive.db`（`-data-dir` 可改）。
-
-默认管理员：**用户名 `admin`，密码 `admin`**（单机已关验证码）。  
-注意：前端会把密码 `admin` 先 MD5 再提交，服务端 Root 密码存的是 MD5 值。
-
-### 浏览器打开 `/` 需要前端
-
-未挂载 SPA 时 `/` 会显示说明页（不再裸 404）。启用控制台：
+To build the admin SPA:
 
 ```bash
 cd ../tokenlive-admin/frontend && npm ci && npm run build:prod
-cd ../../tokenlive-standalone
-# 重启 tokenlive 后强制刷新浏览器（Cmd+Shift+R），避免旧 JS 缓存
-make run   # 自动探测 ../tokenlive-admin/frontend/dist
+cd ../../tokenlive-standalone && make run
 ```
 
-### 配置
+### Pre-built Release
 
-| 参数 | 含义 |
-|------|------|
-| `-conf` | Gateway YAML（须 `gateway.config_source: embedded`） |
-| `-data-dir` | 数据目录（默认 `data`） |
-| `-admin-workdir` | Admin TOML 目录（默认本仓 `configs/admin`） |
-| `-admin-config` | workdir 下子集；bundled 配置可省略 |
-| `-admin-static` | SPA 目录，可选 |
+Download from [GitHub Releases](https://github.com/tokenlive/tokenlive-standalone/releases).
 
-示例 YAML：`config/all-in-one.example.yml`。  
-Admin 捆绑配置：`configs/admin/`（不依赖环境里的 `DB_TYPE=mysql`）。
+## Architecture
 
-## OpenSpec
+```
+tokenlive (this repo)
+  ├─ adminapp (tokenlive-admin)       → /api/v1 + SPA
+  ├─ confighub                        → Embedded GatewayProvider
+  └─ pkg/gateway (tokenlive-gateway)  → /v1/* Engine
+```
 
-跨仓契约与任务：`openspec/changes/merge-gateway-admin/`
+Admin writes DB → `OnConfigChanged` → ConfigHub refresh → `ApplyGatewayConfig` / cache purge.
 
-- `proposal.md` / `design.md` / `tasks.md`
-- `embed-api.md` — 库边界签名
-- `specs/*`
+## Configuration
 
-## Homebrew / 本机服务
+| Flag | Description |
+|------|-------------|
+| `-conf` | Gateway YAML (must set `gateway.config_source: embedded`) |
+| `-data-dir` | Data directory (default: `data`) |
+| `-admin-workdir` | Admin TOML directory (default: bundled `configs/admin`) |
+| `-admin-config` | Subset of admin config; omit for bundled defaults |
+| `-admin-static` | SPA directory, optional |
 
-见 [docs/homebrew.md](docs/homebrew.md)。
+Example YAML: `config/all-in-one.example.yml`
+Bundled admin config: `configs/admin/`
+
+Default port: **2525**. Default database: SQLite (`data/tokenlive.db`). Default admin: `admin` / `admin` (captcha disabled).
+
+## Development
+
+```bash
+make test
+make run
+make smoke
+```
+
+Release packaging:
+
+```bash
+VERSION=0.1.0 ./scripts/package-release.sh
+```
+
+Local Homebrew install (from source):
 
 ```bash
 ./scripts/brew-install-local.sh
-brew services start tokenlive   # 或 tokenlive-start
-# http://127.0.0.1:2525  admin / admin
-brew services stop tokenlive    # 或 tokenlive-stop
 ```
 
-## 状态
+## Status
 
-- [x] 脚手架 + OpenSpec
-- [x] Gateway / Admin embed API（本地未发 tag 时用 replace）
-- [x] ConfigHub + 热更新桥接
-- [x] 本机 brew 风格安装脚本（`brew-install-local.sh`）
-- [ ] 主线 tag 钉扎（去掉 replace）+ 正式 tap
-- [ ] 完整 E2E（登录控制台 → 配模型 → chat completions）
+- [x] Scaffold + OpenSpec contract
+- [x] Gateway / Admin embed API
+- [x] ConfigHub + hot-reload bridge
+- [x] Published tags + official Homebrew tap
+- [ ] Full E2E (login → configure model → chat completions)
 
-## 许可
+## License
 
-与 TokenLive 主线项目一致。
+Apache 2.0
