@@ -4,6 +4,7 @@ BINARY ?= bin/tokenlive
 CONF ?= config/all-in-one.example.yml
 ADMIN_WORKDIR ?= configs/admin
 ADMIN_CONFIG ?=
+# Empty = auto-detect ../tokenlive-admin/frontend/dist or web/dist
 ADMIN_STATIC ?=
 DATA_DIR ?= data
 

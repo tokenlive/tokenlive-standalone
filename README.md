@@ -47,11 +47,15 @@ make smoke        # 短暂启动并检查 health
 
 默认管理员：`admin` / `admin`（单机配置已 **禁用验证码**）。
 
-可选前端：
+### 浏览器打开 `/` 需要前端
+
+未挂载 SPA 时 `/` 会显示说明页（不再裸 404）。启用控制台：
 
 ```bash
 cd ../tokenlive-admin/frontend && npm ci && npm run build
 cd ../../tokenlive-standalone
+make run   # 自动探测 ../tokenlive-admin/frontend/dist
+# 或
 make run ADMIN_STATIC=../tokenlive-admin/frontend/dist
 ```
 

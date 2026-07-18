@@ -74,12 +74,17 @@ func main() {
 		port = 2525
 	}
 
+	staticDir := *adminStatic
+	if staticDir == "" {
+		staticDir = assemble.DetectAdminStaticDir()
+	}
+
 	app, err := assemble.New(ctx, assemble.Options{
 		GatewayConf:    v,
 		Logger:         logger,
 		AdminWorkDir:   workDir,
 		AdminConfigs:   adminCfg,
-		AdminStaticDir: *adminStatic,
+		AdminStaticDir: staticDir,
 	})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "assemble failed: %v\n", err)
@@ -87,7 +92,11 @@ func main() {
 	}
 	defer app.Close(context.Background())
 
-	fmt.Fprintf(os.Stderr, "tokenlive all-in-one listening on http://%s:%d (health /health)\n", host, port)
+	if staticDir != "" {
+		fmt.Fprintf(os.Stderr, "tokenlive all-in-one listening on http://%s:%d (console SPA: %s)\n", host, port, staticDir)
+	} else {
+		fmt.Fprintf(os.Stderr, "tokenlive all-in-one listening on http://%s:%d (no SPA — open / for setup hints, or pass -admin-static)\n", host, port)
+	}
 	if err := app.ListenAndServe(ctx); err != nil && err != context.Canceled {
 		fmt.Fprintf(os.Stderr, "server error: %v\n", err)
 		os.Exit(1)

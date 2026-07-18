@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -83,6 +85,9 @@ func New(ctx context.Context, opt Options) (*App, error) {
 	if opt.AdminConfigs == "" {
 		opt.AdminConfigs = "dev"
 	}
+	if opt.AdminStaticDir == "" {
+		opt.AdminStaticDir = DetectAdminStaticDir()
+	}
 
 	r := gin.New()
 	r.Use(gin.Recovery())
@@ -90,15 +95,30 @@ func New(ctx context.Context, opt Options) (*App, error) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok", "mode": "all-in-one"})
 	})
 
+	// Friendly root when SPA is not mounted (static middleware owns "/" when present).
+	if opt.AdminStaticDir == "" {
+		r.GET("/", func(c *gin.Context) {
+			c.Header("Content-Type", "text/html; charset=utf-8")
+			c.String(http.StatusOK, noSPAHTML)
+		})
+	}
+
 	app := &App{Engine: r, host: opt.Host, port: opt.Port}
 
 	// 1) Admin (DB + routes). Callback wired after hub exists.
+	// When SPA is present, keep NoRoute so static middleware can serve index.html for "/".
+	var keepNoRoute *bool
+	if opt.AdminStaticDir != "" {
+		v := false
+		keepNoRoute = &v // DisableNoRoute=false
+	}
 	var hub *confighub.Hub
 	adminApp, err := adminapp.New(ctx, adminapp.Options{
-		WorkDir:   opt.AdminWorkDir,
-		Configs:   opt.AdminConfigs,
-		StaticDir: opt.AdminStaticDir,
-		Engine:    r,
+		WorkDir:        opt.AdminWorkDir,
+		Configs:        opt.AdminConfigs,
+		StaticDir:      opt.AdminStaticDir,
+		Engine:         r,
+		DisableNoRoute: keepNoRoute,
 		OnConfigChanged: func(ctx context.Context, kind string, keys ...string) {
 			if hub == nil || app.Gateway == nil {
 				return
@@ -209,3 +229,62 @@ func (a *App) Close(ctx context.Context) {
 		a.gwCleanup = nil
 	}
 }
+
+// DetectAdminStaticDir finds a built admin SPA directory.
+// Order: TOKENLIVE_ADMIN_STATIC, ./web/dist, ../tokenlive-admin/frontend/dist.
+func DetectAdminStaticDir() string {
+	if p := os.Getenv("TOKENLIVE_ADMIN_STATIC"); p != "" {
+		if spaDirOK(p) {
+			return p
+		}
+	}
+	candidates := []string{
+		"web/dist",
+		"frontend/dist",
+		filepath.Join("..", "tokenlive-admin", "frontend", "dist"),
+	}
+	for _, p := range candidates {
+		if spaDirOK(p) {
+			abs, err := filepath.Abs(p)
+			if err == nil {
+				return abs
+			}
+			return p
+		}
+	}
+	return ""
+}
+
+func spaDirOK(dir string) bool {
+	st, err := os.Stat(filepath.Join(dir, "index.html"))
+	return err == nil && !st.IsDir()
+}
+
+const noSPAHTML = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <title>TokenLive</title>
+  <style>
+    body{font-family:system-ui,sans-serif;max-width:40rem;margin:3rem auto;padding:0 1rem;line-height:1.5;color:#1a1a1a}
+    code{background:#f4f4f5;padding:.1rem .35rem;border-radius:4px}
+    a{color:#1677ff}
+  </style>
+</head>
+<body>
+  <h1>TokenLive All-in-one</h1>
+  <p>服务已启动，但<strong>未挂载管理控制台前端</strong>，所以打开 <code>/</code> 会看不到页面。</p>
+  <p>健康检查：<a href="/health">/health</a> · API 前缀：<code>/api/v1</code> · LLM：<code>/v1</code></p>
+  <h2>启用控制台 UI</h2>
+  <ol>
+    <li>构建前端：
+      <pre>cd ../tokenlive-admin/frontend &amp;&amp; npm ci &amp;&amp; npm run build</pre>
+    </li>
+    <li>重启（自动探测 <code>../tokenlive-admin/frontend/dist</code>），或显式指定：
+      <pre>./bin/tokenlive -admin-static ../tokenlive-admin/frontend/dist</pre>
+    </li>
+  </ol>
+  <p>默认管理员（验证码已关）：<code>admin</code> / <code>admin</code></p>
+</body>
+</html>
+`
