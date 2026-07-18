@@ -1,16 +1,16 @@
-.PHONY: build test run tidy smoke
+.PHONY: build test run tidy smoke package brew-install brew-uninstall
 
 BINARY ?= bin/tokenlive
 CONF ?= config/all-in-one.example.yml
 ADMIN_WORKDIR ?= configs/admin
 ADMIN_CONFIG ?=
-# Empty = auto-detect ../tokenlive-admin/frontend/dist or web/dist
 ADMIN_STATIC ?=
 DATA_DIR ?= data
+VERSION ?= 0.1.0-dev
 
 build:
 	mkdir -p bin
-	go build -ldflags="-s -w" -o $(BINARY) ./cmd/tokenlive
+	go build -ldflags="-s -w -X main.version=$(VERSION)" -o $(BINARY) ./cmd/tokenlive
 
 test:
 	go test ./...
@@ -18,7 +18,6 @@ test:
 tidy:
 	go mod tidy
 
-# Local all-in-one (requires sibling tokenlive-gateway + tokenlive-admin via go.mod replace)
 run: build
 	mkdir -p $(DATA_DIR)
 	./$(BINARY) \
@@ -32,7 +31,6 @@ smoke-validate:
 	@go test ./internal/assemble/ -run TestValidateAllInOne -count=1
 	@echo "validate ok"
 
-# Start briefly and hit /health on :2525
 smoke: build
 	mkdir -p $(DATA_DIR)
 	@./$(BINARY) -conf $(CONF) -data-dir $(DATA_DIR) -admin-workdir $(ADMIN_WORKDIR) $(if $(ADMIN_CONFIG),-admin-config $(ADMIN_CONFIG),) > /tmp/tokenlive-smoke.log 2>&1 & \
@@ -48,3 +46,14 @@ smoke: build
 		done; \
 		if [ "$$ok" != "1" ]; then echo "smoke: health check failed"; tail -40 /tmp/tokenlive-smoke.log; exit 1; fi; \
 		echo "smoke: $$(cat /tmp/tokenlive-health.json)"
+
+# Full release layout under dist/ (binary + admin share + web + etc)
+package:
+	VERSION=$(VERSION) ./scripts/package-release.sh
+
+# Install into local Homebrew prefix from sibling sources
+brew-install:
+	./scripts/brew-install-local.sh
+
+brew-uninstall:
+	./scripts/brew-uninstall-local.sh

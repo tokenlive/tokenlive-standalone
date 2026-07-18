@@ -14,7 +14,11 @@ import (
 	"github.com/tokenlive/tokenlive-standalone/internal/assemble"
 )
 
+// Set via -ldflags "-X main.version=..."
+var version = "dev"
+
 func main() {
+	showVersion := flag.Bool("version", false, "print version and exit")
 	confPath := flag.String("conf", "config/all-in-one.example.yml", "gateway-side YAML config")
 	adminWorkDir := flag.String("admin-workdir", "", "admin configs workdir (default: ./configs/admin)")
 	// When using bundled configs/admin, leave empty (load all toml in workdir).
@@ -22,6 +26,11 @@ func main() {
 	adminStatic := flag.String("admin-static", "", "admin SPA static dir (optional)")
 	dataDir := flag.String("data-dir", "data", "mutable data directory (sqlite, logs)")
 	flag.Parse()
+
+	if *showVersion {
+		fmt.Println(version)
+		return
+	}
 
 	v := config.NewConfig(*confPath)
 	if err := assemble.ValidateAllInOne(v); err != nil {

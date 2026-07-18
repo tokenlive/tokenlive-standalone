@@ -107,7 +107,7 @@
                 "sequence": 65,
                 "type": "page",
                 "path": "/monitor/portal-workspaces",
-                "status": "enabled",
+                "status": "disabled",
                 "resources": [
                     {
                         "method": "GET",
@@ -1308,14 +1308,14 @@
                 "sequence": 65,
                 "type": "page",
                 "path": "/space/model-catalog",
-                "status": "enabled",
+                "status": "disabled",
                 "children": [
                     {
                         "code": "add",
                         "name": "Add",
                         "sequence": 9,
                         "type": "button",
-                        "status": "enabled",
+                        "status": "disabled",
                         "resources": [
                             {
                                 "method": "POST",
@@ -1336,7 +1336,7 @@
                         "name": "Edit",
                         "sequence": 8,
                         "type": "button",
-                        "status": "enabled",
+                        "status": "disabled",
                         "resources": [
                             {
                                 "method": "PUT",
@@ -1373,7 +1373,7 @@
                         "name": "Delete",
                         "sequence": 7,
                         "type": "button",
-                        "status": "enabled",
+                        "status": "disabled",
                         "resources": [
                             {
                                 "method": "DELETE",
@@ -1398,7 +1398,7 @@
                         "name": "Search",
                         "sequence": 6,
                         "type": "button",
-                        "status": "enabled"
+                        "status": "disabled"
                     }
                 ],
                 "resources": [

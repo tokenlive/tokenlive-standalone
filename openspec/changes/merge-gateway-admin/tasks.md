@@ -35,10 +35,11 @@
 
 ## 5. Homebrew & release
 
-- [ ] 5.1 Makefile/release build for `tokenlive` binary (+ frontend dist strategy)
-- [ ] 5.2 Homebrew Formula/tap for `tokenlive-standalone`
-- [ ] 5.3 Default brew config + data dir conventions
-- [ ] 5.4 Smoke: install/start → admin login → create model → `POST /v1/chat/completions`
+- [x] 5.1 Makefile/release build for `tokenlive` binary (+ frontend dist strategy) → `scripts/package-release.sh`
+- [x] 5.2 Local brew-style install + LaunchAgent → `scripts/brew-install-local.sh` + Formula draft
+- [x] 5.3 Default brew config + data dir conventions → `config/brew.yml`, prefix etc/var/share
+- [ ] 5.4 Formal tap (`tokenlive/homebrew-tokenlive`) after module tags (no path replace)
+- [ ] 5.5 Smoke: install/start → admin login → create model → `POST /v1/chat/completions`
 
 ## 6. Verification
 

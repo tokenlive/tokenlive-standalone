@@ -45,18 +45,18 @@ make smoke        # 短暂启动并检查 health
 
 默认端口 **2525**。启动时强制 `DB_TYPE=sqlite3`，库文件 `data/tokenlive.db`（`-data-dir` 可改）。
 
-默认管理员：`admin` / `admin`（单机配置已 **禁用验证码**）。
+默认管理员：**用户名 `admin`，密码 `admin`**（单机已关验证码）。  
+注意：前端会把密码 `admin` 先 MD5 再提交，服务端 Root 密码存的是 MD5 值。
 
 ### 浏览器打开 `/` 需要前端
 
 未挂载 SPA 时 `/` 会显示说明页（不再裸 404）。启用控制台：
 
 ```bash
-cd ../tokenlive-admin/frontend && npm ci && npm run build
+cd ../tokenlive-admin/frontend && npm ci && npm run build:prod
 cd ../../tokenlive-standalone
+# 重启 tokenlive 后强制刷新浏览器（Cmd+Shift+R），避免旧 JS 缓存
 make run   # 自动探测 ../tokenlive-admin/frontend/dist
-# 或
-make run ADMIN_STATIC=../tokenlive-admin/frontend/dist
 ```
 
 ### 配置
@@ -80,13 +80,23 @@ Admin 捆绑配置：`configs/admin/`（不依赖环境里的 `DB_TYPE=mysql`）
 - `embed-api.md` — 库边界签名
 - `specs/*`
 
+## Homebrew / 本机安装
+
+见 [docs/homebrew.md](docs/homebrew.md)。
+
+```bash
+./scripts/brew-install-local.sh
+tokenlive-start
+# http://127.0.0.1:2525  admin / admin
+```
+
 ## 状态
 
 - [x] 脚手架 + OpenSpec
 - [x] Gateway / Admin embed API（本地未发 tag 时用 replace）
 - [x] ConfigHub + 热更新桥接
-- [ ] 主线 tag 钉扎（去掉 replace）
-- [ ] Homebrew Formula
+- [x] 本机 brew 风格安装脚本（`brew-install-local.sh`）
+- [ ] 主线 tag 钉扎（去掉 replace）+ 正式 tap
 - [ ] 完整 E2E（登录控制台 → 配模型 → chat completions）
 
 ## 许可
