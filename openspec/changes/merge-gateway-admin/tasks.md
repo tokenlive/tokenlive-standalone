@@ -15,11 +15,11 @@
 
 ## 3. Admin library surface (`tokenlive-admin`)
 
-- [ ] 3.1 Export `RegisterAdmin` / module init onto caller-owned Gin engine
-- [ ] 3.2 Export DB open + AutoMigrate + optional default admin seed
-- [ ] 3.3 Export SPA static FS or documented dist path for host mount
-- [ ] 3.4 Add host callback/hook on config-affecting writes (no import of gateway)
-- [ ] 3.5 Keep existing admin `main` dual-process entry unchanged
+- [x] 3.1 Export `RegisterAdmin` / module init onto caller-owned Gin engine → `adminapp.New/Register`
+- [x] 3.2 Export DB open + AutoMigrate + optional default admin seed → via `bootstrap.Init` + mods Init
+- [x] 3.3 Export SPA static FS or documented dist path for host mount → `Options.StaticDir` + existing static middleware
+- [x] 3.4 Add host callback/hook on config-affecting writes (no import of gateway) → `util.OnConfigChanged` / `NotifyConfigChanged`
+- [x] 3.5 Keep existing admin `main` dual-process entry unchanged → `bootstrap.Run` 仍走 CLI
 - [ ] 3.6 Tag a release for standalone to depend on
 
 ## 4. Create `tokenlive-standalone` repo

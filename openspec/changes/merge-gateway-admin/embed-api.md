@@ -56,9 +56,9 @@ gw.Config   *config.ConfigManager
 
 **Embedded provider**：实现放在 **standalone**（`internal/confighub`），满足 `config.GatewayProvider`，经 `Options.Provider` 注入。Gateway 不依赖 standalone。
 
-## 4. Admin embed API（目标签名）
+## 4. Admin embed API
 
-**包（规划）**：`github.com/tokenlive/tokenlive-admin/adminapp`
+**包**：`github.com/tokenlive/tokenlive-admin/adminapp`
 
 ```go
 type Options struct {
@@ -66,21 +66,22 @@ type Options struct {
     Configs   string   // 相对 WorkDir，如 "dev"
     StaticDir string   // SPA；空则不挂前端
 
-    Engine *gin.Engine // 非 nil：只 Register，不 Listen
+    Engine *gin.Engine // 非 nil：New 时 Register，不 Listen
 
-    // 配置影响 Gateway 运行时的变更通知（admin 不 import gateway）
-    OnConfigChanged func(ctx context.Context, kind string, keys ...string)
-    // kind: "endpoints" | "policies" | "apikeys" | "all"
+    OnConfigChanged util.ConfigChangeListener
+    // kind: endpoints | policies | apikeys | all
 }
 
 func New(ctx context.Context, opt Options) (*App, error)
 func (a *App) Register(ctx context.Context, e *gin.Engine) error
 func (a *App) Handler() http.Handler
-func (a *App) Start(ctx context.Context) error   // CLI 兼容：自 listen
-func (a *App) Shutdown(ctx context.Context) error
+func (a *App) Start(ctx context.Context) error    // 自 listen，不 os.Exit
+func (a *App) Shutdown(ctx context.Context) error // 不 os.Exit
 ```
 
-**状态**：尚未实现；见 tasks §3。
+**变更通知**：`pkg/util.OnConfigChanged` / `NotifyConfigChanged`（resource/policy/apikey 写路径已挂）。
+
+**状态（admin 仓）**：`adminapp` + `bootstrap.Init/RegisterTo/ListenAndServe` 已落地；CLI `bootstrap.Run` 仍可用。
 
 ## 5. Standalone 组装伪代码
 
