@@ -1,26 +1,19 @@
-# tokenlive-standalone all-in-one example (not wired yet)
-# deploy_mode is implied: all-in-one (Gateway + Admin both required)
+# tokenlive-standalone all-in-one example
+# Implied deploy_mode: all-in-one (Gateway + Admin both required)
+# Admin TOML still loaded from -admin-workdir (sibling tokenlive-admin/configs by default)
 
+env: local
 http:
   host: 127.0.0.1
   port: 8000
 
-# Must be embedded in all-in-one
+# Must be embedded in all-in-one (fail-fast if not)
 gateway:
   config_source: embedded
   state_store: memory
 
-admin:
-  # Management DB (default SQLite for single-host)
-  db:
-    driver: sqlite3
-    dsn: ${TOKENLIVE_DATA_DIR:./data}/tokenlive.db
-  # JWT / seed admin — filled when admin embed API is integrated
-  # jwt_secret: ${TOKENLIVE_JWT_SECRET:}
-
 data:
   redis:
-    # optional; omit or empty => memory state
     addr: ${REDIS_ADDR:}
     password: ${REDIS_PASSWORD:}
     db: ${REDIS_DB:0}
@@ -28,3 +21,52 @@ data:
 log:
   log_level: info
   mode: console
+  encoding: console
+  log_file_name: "./data/logs/tokenlive.log"
+  max_backups: 3
+  max_age: 7
+  max_size: 100
+  compress: false
+
+llm:
+  enable_auth: false
+  enable_metrics: false
+  enable_logging: true
+
+# Minimal local models so Engine can Init before ConfigHub is complete
+models:
+  gpt-4:
+    request_types: [chat_completion]
+    endpoints:
+      - provider: openai-local
+        url: http://127.0.0.1:9/v1
+        real_model: gpt-4
+        priority: 1
+        weight: 100
+
+providers:
+  openai-local:
+    protocol: openai
+    api_key: sk-placeholder
+    timeout: 60s
+
+pipelines:
+  chat_completion:
+    name: chat_completion
+    request_types: ["chat_completion"]
+    inbound_filters: ["auth", "validate"]
+    outbound_filters: ["metrics", "access_log"]
+    critical_outbound_filters: []
+    invoker:
+      type: cluster
+      routers: ["capability", "priority"]
+      load_balancer: round_robin
+      retry:
+        retry: 0
+        backoff_type: fixed
+        base_ms: 0
+        error_codes: ["500"]
+
+access_log:
+  clickhouse:
+    enabled: false

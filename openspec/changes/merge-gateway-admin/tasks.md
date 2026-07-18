@@ -25,12 +25,12 @@
 ## 4. Create `tokenlive-standalone` repo
 
 - [x] 4.1 Create repo scaffold: `cmd/tokenlive`, `internal/assemble`, `internal/confighub`, `internal/bridge`, `config/`
-- [ ] 4.2 `go.mod` require gateway + admin tags; dev `replace` for local paths
-- [ ] 4.3 Implement assemble: one Gin, register LLM + Admin + health/metrics
+- [x] 4.2 `go.mod` require gateway + admin; dev `replace` for local paths (tags when released)
+- [x] 4.3 Implement assemble: one Gin, register LLM + Admin + health → `internal/assemble`
 - [ ] 4.4 Implement ConfigHub + EmbeddedGatewayProvider + bridge from admin hooks
-- [ ] 4.5 Startup validation: all-in-one only; require `embedded`; fail-fast otherwise
-- [x] 4.6 All-in-one YAML example: SQLite, memory state, data_dir, admin JWT/DB → `config/all-in-one.example.yml`（仍可扩展）
-- [ ] 4.7 Atomic graceful shutdown
+- [x] 4.5 Startup validation: all-in-one only; require `embedded`; fail-fast otherwise
+- [x] 4.6 All-in-one YAML example → `config/all-in-one.example.yml`
+- [x] 4.7 Atomic graceful shutdown → `App.ListenAndServe` + `Close`
 - [x] 4.8 README: two deployment modes; point mainline to gateway/admin repos
 
 ## 5. Homebrew & release
