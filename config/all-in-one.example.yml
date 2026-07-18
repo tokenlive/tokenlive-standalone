@@ -1,0 +1,30 @@
+# tokenlive-standalone all-in-one example (not wired yet)
+# deploy_mode is implied: all-in-one (Gateway + Admin both required)
+
+http:
+  host: 127.0.0.1
+  port: 8000
+
+# Must be embedded in all-in-one
+gateway:
+  config_source: embedded
+  state_store: memory
+
+admin:
+  # Management DB (default SQLite for single-host)
+  db:
+    driver: sqlite3
+    dsn: ${TOKENLIVE_DATA_DIR:./data}/tokenlive.db
+  # JWT / seed admin — filled when admin embed API is integrated
+  # jwt_secret: ${TOKENLIVE_JWT_SECRET:}
+
+data:
+  redis:
+    # optional; omit or empty => memory state
+    addr: ${REDIS_ADDR:}
+    password: ${REDIS_PASSWORD:}
+    db: ${REDIS_DB:0}
+
+log:
+  log_level: info
+  mode: console
