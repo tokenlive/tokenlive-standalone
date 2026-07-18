@@ -1,0 +1,10 @@
+[Logger]
+Debug = false
+Level = "info"
+CallerSkip = 1
+
+[Logger.File]
+Enable = false
+Path = "data/log/tokenlive.log"
+MaxBackups = 5
+MaxSize = 64

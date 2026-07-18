@@ -1,0 +1,132 @@
+# All-in-one admin config (embedded in tokenlive-standalone).
+# DB_TYPE/DB_DSN are forced by cmd/tokenlive before load so host env cannot switch to MySQL by accident.
+
+[General]
+AppName = "tokenlive"
+Version = "v1.0.0"
+Debug = true
+PprofAddr = ""
+DisableSwagger = true
+DisablePrintConfig = true
+DefaultLoginPwd = "21232f297a57a5a743894a0e4a801fc3"
+MenuFile = "menu.json"
+DenyOperateMenu = false
+
+[General.HTTP]
+# Not used for listen in all-in-one (host uses gateway http.port, default 2525)
+Addr = ":2525"
+ShutdownTimeout = 10
+ReadTimeout = 60
+WriteTimeout = 60
+IdleTimeout = 10
+CertFile = ""
+KeyFile = ""
+
+[General.Root]
+ID = "root"
+Username = "admin"
+Password = "admin"
+Name = "Admin"
+
+[Storage]
+
+[Storage.Cache]
+Type = "memory"
+Delimiter = ":"
+
+[Storage.Cache.Memory]
+CleanupInterval = 60
+
+[Storage.Cache.Badger]
+Path = "data/cache"
+
+[Storage.Cache.Redis]
+Addr = ""
+Username = ""
+Password = ""
+DB = 0
+
+[Storage.DB]
+Debug = false
+Type = "sqlite3"
+DSN = "data/tokenlive.db"
+MaxLifetime = 86400
+MaxIdleTime = 3600
+MaxOpenConns = 50
+MaxIdleConns = 10
+TablePrefix = ""
+AutoMigrate = true
+
+[Storage.EventQueue]
+Type = "redis"
+Topic = "aigw:events:policy"
+ConsumerGroup = "admin-consumer"
+RetentionDays = 2
+CleanupIntervalHours = 6
+
+[Util]
+
+[Util.Captcha]
+Length = 4
+Width = 400
+Height = 160
+CacheType = "memory"
+
+[Util.Captcha.Redis]
+Addr = ""
+Username = ""
+Password = ""
+DB = 1
+KeyPrefix = "captcha:"
+
+[Util.Prometheus]
+Enable = false
+Port = 9100
+BasicUsername = "admin"
+BasicPassword = "admin"
+LogApis = []
+LogMethods = []
+DefaultCollect = true
+
+[Util.PrometheusServer]
+Address = ""
+Username = ""
+Password = ""
+
+[Dictionary]
+UserCacheExp = 4
+
+[Gateway]
+APIKeyPepper = "${GATEWAY_API_KEY_PEPPER:}"
+
+[OAuth]
+Enabled = false
+AllowSignup = false
+AllowedDomains = []
+AllowedEmails = []
+DefaultRoleCode = ""
+DefaultModelIDs = []
+RefreshToken = false
+TicketRedirectURL = "/login"
+
+[OAuth.Google]
+Enabled = false
+ClientID = ""
+ClientSecret = ""
+RedirectURL = ""
+Scopes = ["openid", "email", "profile"]
+
+[OAuth.GitHub]
+Enabled = false
+ClientID = ""
+ClientSecret = ""
+RedirectURL = ""
+Scopes = ["read:user", "user:email"]
+
+[Portal]
+BaseURL = ""
+InternalAPIToken = ""
+
+[Sync]
+Endpoints = true
+Policies = true

@@ -45,5 +45,6 @@
 - [ ] 6.1 CI gateway: standalone cmd + embed API unit/smoke
 - [ ] 6.2 CI admin: dual-process cmd + embed API unit/smoke
 - [ ] 6.3 CI standalone: all-in-one integration (embedded hot-reload, API key auth)
-- [ ] 6.4 CI standalone: fail-fast non-embedded config
-- [ ] 6.5 Archive note: implementation lives in `tokenlive-standalone`; this openspec change is the cross-repo contract
+- [x] 6.4 CI standalone: fail-fast non-embedded config → `cmd/tokenlive` test + ValidateAllInOne
+- [x] 6.5 Local smoke: `make smoke` / health on :2525 with bundled configs/admin + forced SQLite
+- [ ] 6.6 Archive note: implementation lives in `tokenlive-standalone`; this openspec change is the cross-repo contract

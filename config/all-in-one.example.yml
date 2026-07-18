@@ -5,7 +5,7 @@
 env: local
 http:
   host: 127.0.0.1
-  port: 8000
+  port: 2525
 
 # Must be embedded in all-in-one (fail-fast if not)
 gateway:

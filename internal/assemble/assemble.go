@@ -72,7 +72,7 @@ func New(ctx context.Context, opt Options) (*App, error) {
 		opt.Port = opt.GatewayConf.GetInt("http.port")
 	}
 	if opt.Port == 0 {
-		opt.Port = 8000
+		opt.Port = 2525
 	}
 	if opt.Host == "" {
 		opt.Host = "127.0.0.1"

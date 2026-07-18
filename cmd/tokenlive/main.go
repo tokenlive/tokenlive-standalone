@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 
 	"github.com/tokenlive/tokenlive-gateway/pkg/config"
@@ -15,9 +16,11 @@ import (
 
 func main() {
 	confPath := flag.String("conf", "config/all-in-one.example.yml", "gateway-side YAML config")
-	adminWorkDir := flag.String("admin-workdir", "", "admin configs workdir (default: env TOKENLIVE_ADMIN_WORKDIR or ../tokenlive-admin/configs)")
-	adminConfigs := flag.String("admin-config", "dev", "admin config name under workdir")
+	adminWorkDir := flag.String("admin-workdir", "", "admin configs workdir (default: ./configs/admin)")
+	// When using bundled configs/admin, leave empty (load all toml in workdir).
+	adminConfigs := flag.String("admin-config", "", "admin config subset under workdir (empty = all files in workdir)")
 	adminStatic := flag.String("admin-static", "", "admin SPA static dir (optional)")
+	dataDir := flag.String("data-dir", "data", "mutable data directory (sqlite, logs)")
 	flag.Parse()
 
 	v := config.NewConfig(*confPath)
@@ -26,24 +29,56 @@ func main() {
 		os.Exit(2)
 	}
 
+	if err := os.MkdirAll(*dataDir, 0o755); err != nil {
+		fmt.Fprintf(os.Stderr, "data-dir: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Force SQLite for all-in-one so ambient DB_TYPE=mysql / path-like DB_DSN cannot break startup.
+	dbPath := filepath.Join(*dataDir, "tokenlive.db")
+	_ = os.Setenv("DB_TYPE", "sqlite3")
+	_ = os.Setenv("DB_DSN", dbPath)
+
 	workDir := *adminWorkDir
 	if workDir == "" {
 		workDir = os.Getenv("TOKENLIVE_ADMIN_WORKDIR")
 	}
 	if workDir == "" {
-		// Dev default: sibling checkout
-		workDir = "../tokenlive-admin/configs"
+		workDir = "configs/admin"
+	}
+
+	adminCfg := *adminConfigs
+	// Bundled layout: configs/admin/conf/*.toml + menu.json at workdir root.
+	// Sibling tokenlive-admin: workdir=.../configs, subset=dev.
+	if adminCfg == "" {
+		switch {
+		case dirExists(filepath.Join(workDir, "conf")):
+			adminCfg = "conf"
+		case dirExists(filepath.Join(workDir, "dev")):
+			adminCfg = "dev"
+		default:
+			adminCfg = "conf"
+		}
 	}
 
 	logger := log.NewLog(v)
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
+	host := v.GetString("http.host")
+	if host == "" {
+		host = "127.0.0.1"
+	}
+	port := v.GetInt("http.port")
+	if port == 0 {
+		port = 2525
+	}
+
 	app, err := assemble.New(ctx, assemble.Options{
 		GatewayConf:    v,
 		Logger:         logger,
 		AdminWorkDir:   workDir,
-		AdminConfigs:   *adminConfigs,
+		AdminConfigs:   adminCfg,
 		AdminStaticDir: *adminStatic,
 	})
 	if err != nil {
@@ -52,9 +87,14 @@ func main() {
 	}
 	defer app.Close(context.Background())
 
-	fmt.Fprintf(os.Stderr, "tokenlive all-in-one listening (health on /health)\n")
+	fmt.Fprintf(os.Stderr, "tokenlive all-in-one listening on http://%s:%d (health /health)\n", host, port)
 	if err := app.ListenAndServe(ctx); err != nil && err != context.Canceled {
 		fmt.Fprintf(os.Stderr, "server error: %v\n", err)
 		os.Exit(1)
 	}
+}
+
+func dirExists(p string) bool {
+	st, err := os.Stat(p)
+	return err == nil && st.IsDir()
 }
