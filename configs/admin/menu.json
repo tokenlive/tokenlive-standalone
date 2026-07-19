@@ -1,1539 +1,1539 @@
 [
-    {
-        "code": "monitor",
-        "name": "System Monitor",
+  {
+    "code": "monitor",
+    "name": "System Monitor",
+    "sequence": 90,
+    "type": "page",
+    "path": "/monitor",
+    "status": "enabled",
+    "children": [
+      {
+        "code": "home",
+        "name": "Home Overview",
         "sequence": 90,
         "type": "page",
-        "path": "/monitor",
+        "path": "/monitor/home",
         "status": "enabled",
-        "children": [
-            {
-                "code": "home",
-                "name": "Home Overview",
-                "sequence": 90,
-                "type": "page",
-                "path": "/monitor/home",
-                "status": "enabled",
-                "resources": [
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/dashboard/qps"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/dashboard/circuit-breakers"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/dashboard/metrics"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/dashboard/trends"
-                    },
-                    {
-                        "method": "POST",
-                        "path": "/api/v1/dashboard/sync-redis"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/dashboard/model-ranking"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/dashboard/overview"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/dashboard/ws"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/tenants"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/endpoints"
-                    }
-                ]
-            },
-            {
-                "code": "opsMonitor",
-                "name": "Ops Monitor",
-                "sequence": 80,
-                "type": "page",
-                "path": "/monitor/ops",
-                "status": "enabled",
-                "resources": [
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/ops/events"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/ops/events/statistics"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/ops/events/ws"
-                    },
-                    {
-                        "method": "POST",
-                        "path": "/api/v1/dashboard/sync-redis"
-                    }
-                ]
-            },
-            {
-                "code": "auditLog",
-                "name": "Audit Log",
-                "sequence": 70,
-                "type": "page",
-                "path": "/monitor/audit-log",
-                "status": "enabled",
-                "resources": [
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/audit-logs"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/audit-logs/{id}"
-                    }
-                ]
-            },
-            {
-                "code": "portalWorkspaceOps",
-                "name": "Portal Workspaces",
-                "sequence": 65,
-                "type": "page",
-                "path": "/monitor/portal-workspaces",
-                "status": "disabled",
-                "resources": [
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/ops/portal/workspaces/{workspace_id}/api-keys"
-                    },
-                    {
-                        "method": "POST",
-                        "path": "/api/v1/ops/portal/workspaces/{workspace_id}/runtime-sync"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/ops/portal/workspaces/{workspace_id}/runtime-access"
-                    },
-                    {
-                        "method": "PUT",
-                        "path": "/api/v1/ops/portal/workspaces/{workspace_id}/runtime-access"
-                    },
-                    {
-                        "method": "POST",
-                        "path": "/api/v1/ops/portal/workspaces/{workspace_id}/runtime-access/disable"
-                    }
-                ]
-            }
+        "resources": [
+          {
+            "method": "GET",
+            "path": "/api/v1/dashboard/qps"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/dashboard/circuit-breakers"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/dashboard/metrics"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/dashboard/trends"
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/dashboard/sync-redis"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/dashboard/model-ranking"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/dashboard/overview"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/dashboard/ws"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/tenants"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/endpoints"
+          }
         ]
-    },
-    {
-        "code": "policy",
-        "name": "Governance Policy",
-        "sequence": 60,
-        "type": "page",
-        "path": "/policy",
-        "status": "enabled",
-        "children": [
-            {
-                "code": "loadbalanceList",
-                "name": "Load Balance",
-                "sequence": 50,
-                "type": "page",
-                "path": "/policy/loadbalance",
-                "status": "enabled",
-                "children": [
-                    {
-                        "code": "add",
-                        "name": "Add",
-                        "sequence": 9,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/policy/policy-loadbalances"
-                            },
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/policy/policy-bindings"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "edit",
-                        "name": "Edit",
-                        "sequence": 8,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/policy/policy-loadbalances/{id}"
-                            },
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/policy/policy-bindings/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "delete",
-                        "name": "Delete",
-                        "sequence": 7,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/policy/policy-loadbalances/{id}"
-                            },
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/policy/policy-bindings/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "search",
-                        "name": "Search",
-                        "sequence": 6,
-                        "type": "button",
-                        "status": "enabled"
-                    }
-                ],
-                "resources": [
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-loadbalances"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-loadbalances/{id}"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-bindings"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-bindings/{id}"
-                    }
-                ]
-            },
-            {
-                "code": "routeList",
-                "name": "Tag Route",
-                "sequence": 60,
-                "type": "page",
-                "path": "/policy/route",
-                "status": "enabled",
-                "children": [
-                    {
-                        "code": "add",
-                        "name": "Add",
-                        "sequence": 9,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/policy/policy-routes"
-                            },
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/policy/policy-route-details"
-                            },
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/policy/policy-bindings"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "edit",
-                        "name": "Edit",
-                        "sequence": 8,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/policy/policy-routes/{id}"
-                            },
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/policy/policy-route-details/{id}"
-                            },
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/policy/policy-bindings/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "delete",
-                        "name": "Delete",
-                        "sequence": 7,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/policy/policy-routes/{id}"
-                            },
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/policy/policy-route-details/{id}"
-                            },
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/policy/policy-bindings/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "search",
-                        "name": "Search",
-                        "sequence": 6,
-                        "type": "button",
-                        "status": "enabled"
-                    }
-                ],
-                "resources": [
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-routes"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-routes/{id}"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-route-details"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-route-details/{id}"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-bindings"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-bindings/{id}"
-                    }
-                ]
-            },
-            {
-                "code": "limitList",
-                "name": "Rate Limit",
-                "sequence": 80,
-                "type": "page",
-                "path": "/policy/limit",
-                "status": "enabled",
-                "children": [
-                    {
-                        "code": "add",
-                        "name": "Add",
-                        "sequence": 9,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/policy/policy-limits"
-                            },
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/policy/policy-bindings"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "edit",
-                        "name": "Edit",
-                        "sequence": 8,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/policy/policy-limits/{id}"
-                            },
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/policy/policy-bindings/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "delete",
-                        "name": "Delete",
-                        "sequence": 7,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/policy/policy-limits/{id}"
-                            },
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/policy/policy-bindings/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "search",
-                        "name": "Search",
-                        "sequence": 6,
-                        "type": "button",
-                        "status": "enabled"
-                    }
-                ],
-                "resources": [
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-limits"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-limits/{id}"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-bindings"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-bindings/{id}"
-                    }
-                ]
-            },
-            {
-                "code": "invocationList",
-                "name": "Invocation",
-                "sequence": 70,
-                "type": "page",
-                "path": "/policy/invocation",
-                "status": "enabled",
-                "children": [
-                    {
-                        "code": "add",
-                        "name": "Add",
-                        "sequence": 9,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/policy/policy-invocations"
-                            },
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/policy/policy-bindings"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "edit",
-                        "name": "Edit",
-                        "sequence": 8,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/policy/policy-invocations/{id}"
-                            },
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/policy/policy-bindings/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "delete",
-                        "name": "Delete",
-                        "sequence": 7,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/policy/policy-invocations/{id}"
-                            },
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/policy/policy-bindings/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "search",
-                        "name": "Search",
-                        "sequence": 6,
-                        "type": "button",
-                        "status": "enabled"
-                    }
-                ],
-                "resources": [
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-invocations"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-invocations/{id}"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-bindings"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-bindings/{id}"
-                    }
-                ]
-            },
-            {
-                "code": "circuitBreakList",
-                "name": "Circuit Breaker",
-                "sequence": 40,
-                "type": "page",
-                "path": "/policy/circuit-break",
-                "status": "enabled",
-                "children": [
-                    {
-                        "code": "add",
-                        "name": "Add",
-                        "sequence": 9,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/policy/policy-circuit-breaks"
-                            },
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/policy/policy-bindings"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "edit",
-                        "name": "Edit",
-                        "sequence": 8,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/policy/policy-circuit-breaks/{id}"
-                            },
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/policy/policy-bindings/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "delete",
-                        "name": "Delete",
-                        "sequence": 7,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/policy/policy-circuit-breaks/{id}"
-                            },
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/policy/policy-bindings/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "search",
-                        "name": "Search",
-                        "sequence": 6,
-                        "type": "button",
-                        "status": "enabled"
-                    }
-                ],
-                "resources": [
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-circuit-breaks"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-circuit-breaks/{id}"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-bindings"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-bindings/{id}"
-                    }
-                ]
-            },
-            {
-                "code": "taggingList",
-                "name": "Traffic Tagging",
-                "sequence": 90,
-                "type": "page",
-                "path": "/policy/tagging",
-                "status": "enabled",
-                "children": [
-                    {
-                        "code": "add",
-                        "name": "Add",
-                        "sequence": 9,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/policy/policy-taggings"
-                            },
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/policy/policy-bindings"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "edit",
-                        "name": "Edit",
-                        "sequence": 8,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/policy/policy-taggings/{id}"
-                            },
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/policy/policy-bindings/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "delete",
-                        "name": "Delete",
-                        "sequence": 7,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/policy/policy-taggings/{id}"
-                            },
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/policy/policy-bindings/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "search",
-                        "name": "Search",
-                        "sequence": 6,
-                        "type": "button",
-                        "status": "enabled"
-                    }
-                ],
-                "resources": [
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-taggings"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-taggings/{id}"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-bindings"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/policy/policy-bindings/{id}"
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "code": "system",
-        "name": "System",
-        "sequence": 50,
-        "type": "page",
-        "path": "/system",
-        "status": "enabled",
-        "children": [
-            {
-                "code": "menu",
-                "name": "Menu",
-                "sequence": 90,
-                "type": "page",
-                "path": "/system/menu",
-                "status": "enabled",
-                "children": [
-                    {
-                        "code": "add",
-                        "name": "Add",
-                        "sequence": 9,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/menus"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "edit",
-                        "name": "Edit",
-                        "sequence": 8,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/menus/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "delete",
-                        "name": "Delete",
-                        "sequence": 7,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/menus/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "search",
-                        "name": "Search",
-                        "sequence": 6,
-                        "type": "button",
-                        "status": "enabled"
-                    }
-                ],
-                "resources": [
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/menus"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/menus/{id}"
-                    }
-                ]
-            },
-            {
-                "code": "role",
-                "name": "Role",
-                "sequence": 80,
-                "type": "page",
-                "path": "/system/role",
-                "status": "enabled",
-                "children": [
-                    {
-                        "code": "add",
-                        "name": "Add",
-                        "sequence": 9,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/roles"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "edit",
-                        "name": "Edit",
-                        "sequence": 8,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/roles/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "delete",
-                        "name": "Delete",
-                        "sequence": 7,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/roles/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "search",
-                        "name": "Search",
-                        "sequence": 6,
-                        "type": "button",
-                        "status": "enabled"
-                    }
-                ],
-                "resources": [
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/menus"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/roles"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/roles/{id}"
-                    }
-                ]
-            },
-            {
-                "code": "user",
-                "name": "User",
-                "sequence": 70,
-                "type": "page",
-                "path": "/system/user",
-                "status": "enabled",
-                "children": [
-                    {
-                        "code": "add",
-                        "name": "Add",
-                        "sequence": 9,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/users"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "edit",
-                        "name": "Edit",
-                        "sequence": 8,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/users/{id}"
-                            },
-                            {
-                                "method": "PATCH",
-                                "path": "/api/v1/users/{id}/reset-pwd"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "delete",
-                        "name": "Delete",
-                        "sequence": 7,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/users/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "search",
-                        "name": "Search",
-                        "sequence": 6,
-                        "type": "button",
-                        "status": "enabled"
-                    }
-                ],
-                "resources": [
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/roles"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/users"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/users/{id}"
-                    }
-                ]
-            },
-            {
-                "code": "tenant",
-                "name": "Tenant",
-                "sequence": 75,
-                "type": "page",
-                "path": "/system/tenant",
-                "status": "enabled",
-                "children": [
-                    {
-                        "code": "add",
-                        "name": "Add",
-                        "sequence": 9,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/tenants"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "edit",
-                        "name": "Edit",
-                        "sequence": 8,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/tenants/{id}"
-                            },
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/tenant-models/bindings"
-                            },
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/tenant-models/endpoints"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "delete",
-                        "name": "Delete",
-                        "sequence": 7,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/tenants/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "search",
-                        "name": "Search",
-                        "sequence": 6,
-                        "type": "button",
-                        "status": "enabled"
-                    }
-                ],
-                "resources": [
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/tenants"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/tenants/{id}"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/tenant-models/{tenantCode}"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/tenant-models/endpoints"
-                    }
-                ]
-            },
-            {
-                "code": "logger",
-                "name": "Logger",
-                "sequence": 10,
-                "type": "page",
-                "path": "/system/logger",
-                "status": "enabled",
-                "resources": [
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/loggers"
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "code": "space",
-        "name": "Space",
+      },
+      {
+        "code": "opsMonitor",
+        "name": "Ops Monitor",
         "sequence": 80,
         "type": "page",
-        "path": "/space",
+        "path": "/monitor/ops",
+        "status": "enabled",
+        "resources": [
+          {
+            "method": "GET",
+            "path": "/api/v1/ops/events"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/ops/events/statistics"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/ops/events/ws"
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/dashboard/sync-redis"
+          }
+        ]
+      },
+      {
+        "code": "auditLog",
+        "name": "Audit Log",
+        "sequence": 70,
+        "type": "page",
+        "path": "/monitor/audit-log",
+        "status": "enabled",
+        "resources": [
+          {
+            "method": "GET",
+            "path": "/api/v1/audit-logs"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/audit-logs/{id}"
+          }
+        ]
+      },
+      {
+        "code": "portalWorkspaceOps",
+        "name": "Portal Workspaces",
+        "sequence": 65,
+        "type": "page",
+        "path": "/monitor/portal-workspaces",
+        "status": "disabled",
+        "resources": [
+          {
+            "method": "GET",
+            "path": "/api/v1/ops/portal/workspaces/{workspace_id}/api-keys"
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/ops/portal/workspaces/{workspace_id}/runtime-sync"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/ops/portal/workspaces/{workspace_id}/runtime-access"
+          },
+          {
+            "method": "PUT",
+            "path": "/api/v1/ops/portal/workspaces/{workspace_id}/runtime-access"
+          },
+          {
+            "method": "POST",
+            "path": "/api/v1/ops/portal/workspaces/{workspace_id}/runtime-access/disable"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "policy",
+    "name": "Governance Policy",
+    "sequence": 60,
+    "type": "page",
+    "path": "/policy",
+    "status": "enabled",
+    "children": [
+      {
+        "code": "loadbalanceList",
+        "name": "Load Balance",
+        "sequence": 50,
+        "type": "page",
+        "path": "/policy/loadbalance",
         "status": "enabled",
         "children": [
-            {
-                "code": "spaceList",
-                "name": "SpaceList",
-                "sequence": 90,
-                "type": "page",
-                "path": "/space/list",
-                "status": "enabled",
-                "children": [
-                    {
-                        "code": "add",
-                        "name": "Add",
-                        "sequence": 9,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/spaces"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "edit",
-                        "name": "Edit",
-                        "sequence": 8,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/spaces/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "delete",
-                        "name": "Delete",
-                        "sequence": 7,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/spaces/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "search",
-                        "name": "Search",
-                        "sequence": 6,
-                        "type": "button",
-                        "status": "enabled"
-                    }
-                ],
-                "resources": [
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/spaces"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/spaces/{id}"
-                    }
-                ]
-            },
-            {
-                "code": "providerList",
-                "name": "Provider",
-                "sequence": 80,
-                "type": "page",
-                "path": "/space/provider",
-                "status": "enabled",
-                "children": [
-                    {
-                        "code": "add",
-                        "name": "Add",
-                        "sequence": 9,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/providers"
-                            },
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/endpoints"
-                            },
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/endpoints/test"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "edit",
-                        "name": "Edit",
-                        "sequence": 8,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/providers/{id}"
-                            },
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/endpoints/{id}"
-                            },
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/endpoints/{id}/enabled"
-                            },
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/providers/{id}/fetch-models"
-                            },
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/endpoints/test"
-                            },
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/endpoints/{id}/test"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "delete",
-                        "name": "Delete",
-                        "sequence": 7,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/providers/{id}"
-                            },
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/endpoints/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "search",
-                        "name": "Search",
-                        "sequence": 6,
-                        "type": "button",
-                        "status": "enabled"
-                    }
-                ],
-                "resources": [
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/providers"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/providers/{id}"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/providers/{id}/endpoints"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/endpoints"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/endpoints/{id}"
-                    }
-                ]
-            },
-            {
-                "code": "modelList",
-                "name": "Model",
-                "sequence": 70,
-                "type": "page",
-                "path": "/space/model",
-                "status": "enabled",
-                "children": [
-                    {
-                        "code": "add",
-                        "name": "Add",
-                        "sequence": 9,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/models"
-                            },
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/model-aliases"
-                            },
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/data-permissions"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "edit",
-                        "name": "Edit",
-                        "sequence": 8,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/models/{id}"
-                            },
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/model-aliases/{id}"
-                            },
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/data-permissions/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "delete",
-                        "name": "Delete",
-                        "sequence": 7,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/models/{id}"
-                            },
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/model-aliases/{id}"
-                            },
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/data-permissions/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "search",
-                        "name": "Search",
-                        "sequence": 6,
-                        "type": "button",
-                        "status": "enabled"
-                    },
-                    {
-                        "code": "sync",
-                        "name": "Sync",
-                        "sequence": 5,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/models/{id}/sync"
-                            }
-                        ]
-                    }
-                ],
-                "resources": [
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/models"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/models/{id}"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/models/{id}/endpoints"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/model-aliases"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/model-aliases/{id}"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/data-permissions"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/data-permissions/{id}"
-                    }
-                ]
-            },
-            {
-                "code": "modelCatalogList",
-                "name": "Model Catalog",
-                "sequence": 65,
-                "type": "page",
-                "path": "/space/model-catalog",
-                "status": "disabled",
-                "children": [
-                    {
-                        "code": "add",
-                        "name": "Add",
-                        "sequence": 9,
-                        "type": "button",
-                        "status": "disabled",
-                        "resources": [
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/model-catalogs"
-                            },
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/model-catalog-i18n"
-                            },
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/model-price-versions"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "edit",
-                        "name": "Edit",
-                        "sequence": 8,
-                        "type": "button",
-                        "status": "disabled",
-                        "resources": [
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/model-catalogs/{id}"
-                            },
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/model-catalogs/{id}/publish"
-                            },
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/model-catalog-i18n/{model_id}/{locale}"
-                            },
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/model-catalog-i18n/batch"
-                            },
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/model-price-versions/{id}"
-                            },
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/model-price-versions/{id}/deactivate"
-                            },
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/model-service-metrics"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "delete",
-                        "name": "Delete",
-                        "sequence": 7,
-                        "type": "button",
-                        "status": "disabled",
-                        "resources": [
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/model-catalogs/{id}"
-                            },
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/model-catalog-i18n/{model_id}/{locale}"
-                            },
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/model-price-versions/{id}"
-                            },
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/model-service-metrics/{model_id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "search",
-                        "name": "Search",
-                        "sequence": 6,
-                        "type": "button",
-                        "status": "disabled"
-                    }
-                ],
-                "resources": [
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/model-catalogs"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/model-catalogs/{id}"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/model-catalogs/public"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/model-catalogs/slug/{slug}"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/model-catalogs/{id}/i18n"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/model-catalogs/{id}/prices"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/model-catalogs/{id}/metrics"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/model-catalog-i18n"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/model-catalog-i18n/{model_id}/{locale}"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/model-price-versions"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/model-price-versions/{id}"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/model-price-versions/current"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/model-service-metrics"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/model-service-metrics/{model_id}/{window}"
-                    }
-                ]
-            },
-            {
-                "code": "user-api-key",
-                "name": "API Key",
-                "sequence": 60,
-                "type": "page",
-                "path": "/space/user-api-key",
-                "status": "enabled",
-                "children": [
-                    {
-                        "code": "add",
-                        "name": "Add",
-                        "sequence": 9,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "POST",
-                                "path": "/api/v1/user-api-keys"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "edit",
-                        "name": "Edit",
-                        "sequence": 8,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "PUT",
-                                "path": "/api/v1/user-api-keys/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "delete",
-                        "name": "Delete",
-                        "sequence": 7,
-                        "type": "button",
-                        "status": "enabled",
-                        "resources": [
-                            {
-                                "method": "DELETE",
-                                "path": "/api/v1/user-api-keys/{id}"
-                            }
-                        ]
-                    },
-                    {
-                        "code": "search",
-                        "name": "Search",
-                        "sequence": 6,
-                        "type": "button",
-                        "status": "enabled"
-                    }
-                ],
-                "resources": [
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/users"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/user-api-keys"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/user-api-keys/{id}"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/user-api-keys/{id}/plaintext"
-                    }
-                ]
-            }
+          {
+            "code": "add",
+            "name": "Add",
+            "sequence": 9,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "POST",
+                "path": "/api/v1/policy/policy-loadbalances"
+              },
+              {
+                "method": "POST",
+                "path": "/api/v1/policy/policy-bindings"
+              }
+            ]
+          },
+          {
+            "code": "edit",
+            "name": "Edit",
+            "sequence": 8,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "PUT",
+                "path": "/api/v1/policy/policy-loadbalances/{id}"
+              },
+              {
+                "method": "PUT",
+                "path": "/api/v1/policy/policy-bindings/{id}"
+              }
+            ]
+          },
+          {
+            "code": "delete",
+            "name": "Delete",
+            "sequence": 7,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "DELETE",
+                "path": "/api/v1/policy/policy-loadbalances/{id}"
+              },
+              {
+                "method": "DELETE",
+                "path": "/api/v1/policy/policy-bindings/{id}"
+              }
+            ]
+          },
+          {
+            "code": "search",
+            "name": "Search",
+            "sequence": 6,
+            "type": "button",
+            "status": "enabled"
+          }
+        ],
+        "resources": [
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-loadbalances"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-loadbalances/{id}"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-bindings"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-bindings/{id}"
+          }
         ]
-    }
+      },
+      {
+        "code": "routeList",
+        "name": "Tag Route",
+        "sequence": 60,
+        "type": "page",
+        "path": "/policy/route",
+        "status": "enabled",
+        "children": [
+          {
+            "code": "add",
+            "name": "Add",
+            "sequence": 9,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "POST",
+                "path": "/api/v1/policy/policy-routes"
+              },
+              {
+                "method": "POST",
+                "path": "/api/v1/policy/policy-route-details"
+              },
+              {
+                "method": "POST",
+                "path": "/api/v1/policy/policy-bindings"
+              }
+            ]
+          },
+          {
+            "code": "edit",
+            "name": "Edit",
+            "sequence": 8,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "PUT",
+                "path": "/api/v1/policy/policy-routes/{id}"
+              },
+              {
+                "method": "PUT",
+                "path": "/api/v1/policy/policy-route-details/{id}"
+              },
+              {
+                "method": "PUT",
+                "path": "/api/v1/policy/policy-bindings/{id}"
+              }
+            ]
+          },
+          {
+            "code": "delete",
+            "name": "Delete",
+            "sequence": 7,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "DELETE",
+                "path": "/api/v1/policy/policy-routes/{id}"
+              },
+              {
+                "method": "DELETE",
+                "path": "/api/v1/policy/policy-route-details/{id}"
+              },
+              {
+                "method": "DELETE",
+                "path": "/api/v1/policy/policy-bindings/{id}"
+              }
+            ]
+          },
+          {
+            "code": "search",
+            "name": "Search",
+            "sequence": 6,
+            "type": "button",
+            "status": "enabled"
+          }
+        ],
+        "resources": [
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-routes"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-routes/{id}"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-route-details"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-route-details/{id}"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-bindings"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-bindings/{id}"
+          }
+        ]
+      },
+      {
+        "code": "limitList",
+        "name": "Rate Limit",
+        "sequence": 80,
+        "type": "page",
+        "path": "/policy/limit",
+        "status": "enabled",
+        "children": [
+          {
+            "code": "add",
+            "name": "Add",
+            "sequence": 9,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "POST",
+                "path": "/api/v1/policy/policy-limits"
+              },
+              {
+                "method": "POST",
+                "path": "/api/v1/policy/policy-bindings"
+              }
+            ]
+          },
+          {
+            "code": "edit",
+            "name": "Edit",
+            "sequence": 8,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "PUT",
+                "path": "/api/v1/policy/policy-limits/{id}"
+              },
+              {
+                "method": "PUT",
+                "path": "/api/v1/policy/policy-bindings/{id}"
+              }
+            ]
+          },
+          {
+            "code": "delete",
+            "name": "Delete",
+            "sequence": 7,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "DELETE",
+                "path": "/api/v1/policy/policy-limits/{id}"
+              },
+              {
+                "method": "DELETE",
+                "path": "/api/v1/policy/policy-bindings/{id}"
+              }
+            ]
+          },
+          {
+            "code": "search",
+            "name": "Search",
+            "sequence": 6,
+            "type": "button",
+            "status": "enabled"
+          }
+        ],
+        "resources": [
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-limits"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-limits/{id}"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-bindings"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-bindings/{id}"
+          }
+        ]
+      },
+      {
+        "code": "invocationList",
+        "name": "Invocation",
+        "sequence": 70,
+        "type": "page",
+        "path": "/policy/invocation",
+        "status": "enabled",
+        "children": [
+          {
+            "code": "add",
+            "name": "Add",
+            "sequence": 9,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "POST",
+                "path": "/api/v1/policy/policy-invocations"
+              },
+              {
+                "method": "POST",
+                "path": "/api/v1/policy/policy-bindings"
+              }
+            ]
+          },
+          {
+            "code": "edit",
+            "name": "Edit",
+            "sequence": 8,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "PUT",
+                "path": "/api/v1/policy/policy-invocations/{id}"
+              },
+              {
+                "method": "PUT",
+                "path": "/api/v1/policy/policy-bindings/{id}"
+              }
+            ]
+          },
+          {
+            "code": "delete",
+            "name": "Delete",
+            "sequence": 7,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "DELETE",
+                "path": "/api/v1/policy/policy-invocations/{id}"
+              },
+              {
+                "method": "DELETE",
+                "path": "/api/v1/policy/policy-bindings/{id}"
+              }
+            ]
+          },
+          {
+            "code": "search",
+            "name": "Search",
+            "sequence": 6,
+            "type": "button",
+            "status": "enabled"
+          }
+        ],
+        "resources": [
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-invocations"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-invocations/{id}"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-bindings"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-bindings/{id}"
+          }
+        ]
+      },
+      {
+        "code": "circuitBreakList",
+        "name": "Circuit Breaker",
+        "sequence": 40,
+        "type": "page",
+        "path": "/policy/circuit-break",
+        "status": "enabled",
+        "children": [
+          {
+            "code": "add",
+            "name": "Add",
+            "sequence": 9,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "POST",
+                "path": "/api/v1/policy/policy-circuit-breaks"
+              },
+              {
+                "method": "POST",
+                "path": "/api/v1/policy/policy-bindings"
+              }
+            ]
+          },
+          {
+            "code": "edit",
+            "name": "Edit",
+            "sequence": 8,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "PUT",
+                "path": "/api/v1/policy/policy-circuit-breaks/{id}"
+              },
+              {
+                "method": "PUT",
+                "path": "/api/v1/policy/policy-bindings/{id}"
+              }
+            ]
+          },
+          {
+            "code": "delete",
+            "name": "Delete",
+            "sequence": 7,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "DELETE",
+                "path": "/api/v1/policy/policy-circuit-breaks/{id}"
+              },
+              {
+                "method": "DELETE",
+                "path": "/api/v1/policy/policy-bindings/{id}"
+              }
+            ]
+          },
+          {
+            "code": "search",
+            "name": "Search",
+            "sequence": 6,
+            "type": "button",
+            "status": "enabled"
+          }
+        ],
+        "resources": [
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-circuit-breaks"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-circuit-breaks/{id}"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-bindings"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-bindings/{id}"
+          }
+        ]
+      },
+      {
+        "code": "taggingList",
+        "name": "Traffic Tagging",
+        "sequence": 90,
+        "type": "page",
+        "path": "/policy/tagging",
+        "status": "enabled",
+        "children": [
+          {
+            "code": "add",
+            "name": "Add",
+            "sequence": 9,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "POST",
+                "path": "/api/v1/policy/policy-taggings"
+              },
+              {
+                "method": "POST",
+                "path": "/api/v1/policy/policy-bindings"
+              }
+            ]
+          },
+          {
+            "code": "edit",
+            "name": "Edit",
+            "sequence": 8,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "PUT",
+                "path": "/api/v1/policy/policy-taggings/{id}"
+              },
+              {
+                "method": "PUT",
+                "path": "/api/v1/policy/policy-bindings/{id}"
+              }
+            ]
+          },
+          {
+            "code": "delete",
+            "name": "Delete",
+            "sequence": 7,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "DELETE",
+                "path": "/api/v1/policy/policy-taggings/{id}"
+              },
+              {
+                "method": "DELETE",
+                "path": "/api/v1/policy/policy-bindings/{id}"
+              }
+            ]
+          },
+          {
+            "code": "search",
+            "name": "Search",
+            "sequence": 6,
+            "type": "button",
+            "status": "enabled"
+          }
+        ],
+        "resources": [
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-taggings"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-taggings/{id}"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-bindings"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/policy/policy-bindings/{id}"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "system",
+    "name": "System",
+    "sequence": 50,
+    "type": "page",
+    "path": "/system",
+    "status": "enabled",
+    "children": [
+      {
+        "code": "menu",
+        "name": "Menu",
+        "sequence": 90,
+        "type": "page",
+        "path": "/system/menu",
+        "status": "enabled",
+        "children": [
+          {
+            "code": "add",
+            "name": "Add",
+            "sequence": 9,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "POST",
+                "path": "/api/v1/menus"
+              }
+            ]
+          },
+          {
+            "code": "edit",
+            "name": "Edit",
+            "sequence": 8,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "PUT",
+                "path": "/api/v1/menus/{id}"
+              }
+            ]
+          },
+          {
+            "code": "delete",
+            "name": "Delete",
+            "sequence": 7,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "DELETE",
+                "path": "/api/v1/menus/{id}"
+              }
+            ]
+          },
+          {
+            "code": "search",
+            "name": "Search",
+            "sequence": 6,
+            "type": "button",
+            "status": "enabled"
+          }
+        ],
+        "resources": [
+          {
+            "method": "GET",
+            "path": "/api/v1/menus"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/menus/{id}"
+          }
+        ]
+      },
+      {
+        "code": "role",
+        "name": "Role",
+        "sequence": 80,
+        "type": "page",
+        "path": "/system/role",
+        "status": "enabled",
+        "children": [
+          {
+            "code": "add",
+            "name": "Add",
+            "sequence": 9,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "POST",
+                "path": "/api/v1/roles"
+              }
+            ]
+          },
+          {
+            "code": "edit",
+            "name": "Edit",
+            "sequence": 8,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "PUT",
+                "path": "/api/v1/roles/{id}"
+              }
+            ]
+          },
+          {
+            "code": "delete",
+            "name": "Delete",
+            "sequence": 7,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "DELETE",
+                "path": "/api/v1/roles/{id}"
+              }
+            ]
+          },
+          {
+            "code": "search",
+            "name": "Search",
+            "sequence": 6,
+            "type": "button",
+            "status": "enabled"
+          }
+        ],
+        "resources": [
+          {
+            "method": "GET",
+            "path": "/api/v1/menus"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/roles"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/roles/{id}"
+          }
+        ]
+      },
+      {
+        "code": "user",
+        "name": "User",
+        "sequence": 70,
+        "type": "page",
+        "path": "/system/user",
+        "status": "enabled",
+        "children": [
+          {
+            "code": "add",
+            "name": "Add",
+            "sequence": 9,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "POST",
+                "path": "/api/v1/users"
+              }
+            ]
+          },
+          {
+            "code": "edit",
+            "name": "Edit",
+            "sequence": 8,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "PUT",
+                "path": "/api/v1/users/{id}"
+              },
+              {
+                "method": "PATCH",
+                "path": "/api/v1/users/{id}/reset-pwd"
+              }
+            ]
+          },
+          {
+            "code": "delete",
+            "name": "Delete",
+            "sequence": 7,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "DELETE",
+                "path": "/api/v1/users/{id}"
+              }
+            ]
+          },
+          {
+            "code": "search",
+            "name": "Search",
+            "sequence": 6,
+            "type": "button",
+            "status": "enabled"
+          }
+        ],
+        "resources": [
+          {
+            "method": "GET",
+            "path": "/api/v1/roles"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/users"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/users/{id}"
+          }
+        ]
+      },
+      {
+        "code": "tenant",
+        "name": "Tenant",
+        "sequence": 75,
+        "type": "page",
+        "path": "/system/tenant",
+        "status": "enabled",
+        "children": [
+          {
+            "code": "add",
+            "name": "Add",
+            "sequence": 9,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "POST",
+                "path": "/api/v1/tenants"
+              }
+            ]
+          },
+          {
+            "code": "edit",
+            "name": "Edit",
+            "sequence": 8,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "PUT",
+                "path": "/api/v1/tenants/{id}"
+              },
+              {
+                "method": "POST",
+                "path": "/api/v1/tenant-models/bindings"
+              },
+              {
+                "method": "POST",
+                "path": "/api/v1/tenant-models/endpoints"
+              }
+            ]
+          },
+          {
+            "code": "delete",
+            "name": "Delete",
+            "sequence": 7,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "DELETE",
+                "path": "/api/v1/tenants/{id}"
+              }
+            ]
+          },
+          {
+            "code": "search",
+            "name": "Search",
+            "sequence": 6,
+            "type": "button",
+            "status": "enabled"
+          }
+        ],
+        "resources": [
+          {
+            "method": "GET",
+            "path": "/api/v1/tenants"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/tenants/{id}"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/tenant-models/{tenantCode}"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/tenant-models/endpoints"
+          }
+        ]
+      },
+      {
+        "code": "logger",
+        "name": "Logger",
+        "sequence": 10,
+        "type": "page",
+        "path": "/system/logger",
+        "status": "disabled",
+        "resources": [
+          {
+            "method": "GET",
+            "path": "/api/v1/loggers"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "space",
+    "name": "Space",
+    "sequence": 80,
+    "type": "page",
+    "path": "/space",
+    "status": "enabled",
+    "children": [
+      {
+        "code": "spaceList",
+        "name": "SpaceList",
+        "sequence": 90,
+        "type": "page",
+        "path": "/space/list",
+        "status": "disabled",
+        "children": [
+          {
+            "code": "add",
+            "name": "Add",
+            "sequence": 9,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "POST",
+                "path": "/api/v1/spaces"
+              }
+            ]
+          },
+          {
+            "code": "edit",
+            "name": "Edit",
+            "sequence": 8,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "PUT",
+                "path": "/api/v1/spaces/{id}"
+              }
+            ]
+          },
+          {
+            "code": "delete",
+            "name": "Delete",
+            "sequence": 7,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "DELETE",
+                "path": "/api/v1/spaces/{id}"
+              }
+            ]
+          },
+          {
+            "code": "search",
+            "name": "Search",
+            "sequence": 6,
+            "type": "button",
+            "status": "enabled"
+          }
+        ],
+        "resources": [
+          {
+            "method": "GET",
+            "path": "/api/v1/spaces"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/spaces/{id}"
+          }
+        ]
+      },
+      {
+        "code": "providerList",
+        "name": "Provider",
+        "sequence": 80,
+        "type": "page",
+        "path": "/space/provider",
+        "status": "enabled",
+        "children": [
+          {
+            "code": "add",
+            "name": "Add",
+            "sequence": 9,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "POST",
+                "path": "/api/v1/providers"
+              },
+              {
+                "method": "POST",
+                "path": "/api/v1/endpoints"
+              },
+              {
+                "method": "POST",
+                "path": "/api/v1/endpoints/test"
+              }
+            ]
+          },
+          {
+            "code": "edit",
+            "name": "Edit",
+            "sequence": 8,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "PUT",
+                "path": "/api/v1/providers/{id}"
+              },
+              {
+                "method": "PUT",
+                "path": "/api/v1/endpoints/{id}"
+              },
+              {
+                "method": "PUT",
+                "path": "/api/v1/endpoints/{id}/enabled"
+              },
+              {
+                "method": "POST",
+                "path": "/api/v1/providers/{id}/fetch-models"
+              },
+              {
+                "method": "POST",
+                "path": "/api/v1/endpoints/test"
+              },
+              {
+                "method": "POST",
+                "path": "/api/v1/endpoints/{id}/test"
+              }
+            ]
+          },
+          {
+            "code": "delete",
+            "name": "Delete",
+            "sequence": 7,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "DELETE",
+                "path": "/api/v1/providers/{id}"
+              },
+              {
+                "method": "DELETE",
+                "path": "/api/v1/endpoints/{id}"
+              }
+            ]
+          },
+          {
+            "code": "search",
+            "name": "Search",
+            "sequence": 6,
+            "type": "button",
+            "status": "enabled"
+          }
+        ],
+        "resources": [
+          {
+            "method": "GET",
+            "path": "/api/v1/providers"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/providers/{id}"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/providers/{id}/endpoints"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/endpoints"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/endpoints/{id}"
+          }
+        ]
+      },
+      {
+        "code": "modelList",
+        "name": "Model",
+        "sequence": 70,
+        "type": "page",
+        "path": "/space/model",
+        "status": "enabled",
+        "children": [
+          {
+            "code": "add",
+            "name": "Add",
+            "sequence": 9,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "POST",
+                "path": "/api/v1/models"
+              },
+              {
+                "method": "POST",
+                "path": "/api/v1/model-aliases"
+              },
+              {
+                "method": "POST",
+                "path": "/api/v1/data-permissions"
+              }
+            ]
+          },
+          {
+            "code": "edit",
+            "name": "Edit",
+            "sequence": 8,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "PUT",
+                "path": "/api/v1/models/{id}"
+              },
+              {
+                "method": "PUT",
+                "path": "/api/v1/model-aliases/{id}"
+              },
+              {
+                "method": "PUT",
+                "path": "/api/v1/data-permissions/{id}"
+              }
+            ]
+          },
+          {
+            "code": "delete",
+            "name": "Delete",
+            "sequence": 7,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "DELETE",
+                "path": "/api/v1/models/{id}"
+              },
+              {
+                "method": "DELETE",
+                "path": "/api/v1/model-aliases/{id}"
+              },
+              {
+                "method": "DELETE",
+                "path": "/api/v1/data-permissions/{id}"
+              }
+            ]
+          },
+          {
+            "code": "search",
+            "name": "Search",
+            "sequence": 6,
+            "type": "button",
+            "status": "enabled"
+          },
+          {
+            "code": "sync",
+            "name": "Sync",
+            "sequence": 5,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "POST",
+                "path": "/api/v1/models/{id}/sync"
+              }
+            ]
+          }
+        ],
+        "resources": [
+          {
+            "method": "GET",
+            "path": "/api/v1/models"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/models/{id}"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/models/{id}/endpoints"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/model-aliases"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/model-aliases/{id}"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/data-permissions"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/data-permissions/{id}"
+          }
+        ]
+      },
+      {
+        "code": "modelCatalogList",
+        "name": "Model Catalog",
+        "sequence": 65,
+        "type": "page",
+        "path": "/space/model-catalog",
+        "status": "disabled",
+        "children": [
+          {
+            "code": "add",
+            "name": "Add",
+            "sequence": 9,
+            "type": "button",
+            "status": "disabled",
+            "resources": [
+              {
+                "method": "POST",
+                "path": "/api/v1/model-catalogs"
+              },
+              {
+                "method": "POST",
+                "path": "/api/v1/model-catalog-i18n"
+              },
+              {
+                "method": "POST",
+                "path": "/api/v1/model-price-versions"
+              }
+            ]
+          },
+          {
+            "code": "edit",
+            "name": "Edit",
+            "sequence": 8,
+            "type": "button",
+            "status": "disabled",
+            "resources": [
+              {
+                "method": "PUT",
+                "path": "/api/v1/model-catalogs/{id}"
+              },
+              {
+                "method": "PUT",
+                "path": "/api/v1/model-catalogs/{id}/publish"
+              },
+              {
+                "method": "PUT",
+                "path": "/api/v1/model-catalog-i18n/{model_id}/{locale}"
+              },
+              {
+                "method": "PUT",
+                "path": "/api/v1/model-catalog-i18n/batch"
+              },
+              {
+                "method": "PUT",
+                "path": "/api/v1/model-price-versions/{id}"
+              },
+              {
+                "method": "PUT",
+                "path": "/api/v1/model-price-versions/{id}/deactivate"
+              },
+              {
+                "method": "PUT",
+                "path": "/api/v1/model-service-metrics"
+              }
+            ]
+          },
+          {
+            "code": "delete",
+            "name": "Delete",
+            "sequence": 7,
+            "type": "button",
+            "status": "disabled",
+            "resources": [
+              {
+                "method": "DELETE",
+                "path": "/api/v1/model-catalogs/{id}"
+              },
+              {
+                "method": "DELETE",
+                "path": "/api/v1/model-catalog-i18n/{model_id}/{locale}"
+              },
+              {
+                "method": "DELETE",
+                "path": "/api/v1/model-price-versions/{id}"
+              },
+              {
+                "method": "DELETE",
+                "path": "/api/v1/model-service-metrics/{model_id}"
+              }
+            ]
+          },
+          {
+            "code": "search",
+            "name": "Search",
+            "sequence": 6,
+            "type": "button",
+            "status": "disabled"
+          }
+        ],
+        "resources": [
+          {
+            "method": "GET",
+            "path": "/api/v1/model-catalogs"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/model-catalogs/{id}"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/model-catalogs/public"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/model-catalogs/slug/{slug}"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/model-catalogs/{id}/i18n"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/model-catalogs/{id}/prices"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/model-catalogs/{id}/metrics"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/model-catalog-i18n"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/model-catalog-i18n/{model_id}/{locale}"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/model-price-versions"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/model-price-versions/{id}"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/model-price-versions/current"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/model-service-metrics"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/model-service-metrics/{model_id}/{window}"
+          }
+        ]
+      },
+      {
+        "code": "user-api-key",
+        "name": "API Key",
+        "sequence": 60,
+        "type": "page",
+        "path": "/space/user-api-key",
+        "status": "enabled",
+        "children": [
+          {
+            "code": "add",
+            "name": "Add",
+            "sequence": 9,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "POST",
+                "path": "/api/v1/user-api-keys"
+              }
+            ]
+          },
+          {
+            "code": "edit",
+            "name": "Edit",
+            "sequence": 8,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "PUT",
+                "path": "/api/v1/user-api-keys/{id}"
+              }
+            ]
+          },
+          {
+            "code": "delete",
+            "name": "Delete",
+            "sequence": 7,
+            "type": "button",
+            "status": "enabled",
+            "resources": [
+              {
+                "method": "DELETE",
+                "path": "/api/v1/user-api-keys/{id}"
+              }
+            ]
+          },
+          {
+            "code": "search",
+            "name": "Search",
+            "sequence": 6,
+            "type": "button",
+            "status": "enabled"
+          }
+        ],
+        "resources": [
+          {
+            "method": "GET",
+            "path": "/api/v1/users"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/user-api-keys"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/user-api-keys/{id}"
+          },
+          {
+            "method": "GET",
+            "path": "/api/v1/user-api-keys/{id}/plaintext"
+          }
+        ]
+      }
+    ]
+  }
 ]
