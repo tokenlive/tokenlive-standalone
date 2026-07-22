@@ -75,14 +75,42 @@ tokenlive
 ## 仅打包
 
 ```bash
-VERSION=0.1.0 BREW_PREFIX="$(brew --prefix)" ./scripts/package-release.sh
-# dist/tokenlive-0.1.0/{bin,share,etc}
+VERSION=0.2.0 BREW_PREFIX="$(brew --prefix)" ./scripts/package-release.sh
+# dist/tokenlive-0.2.0/{bin,share,etc}
 ```
 
-## 正式 tap（后续）
+## 正式 tap / 自动发版
 
-gateway/admin 发 module tag、去掉 `replace` 后：
+用户侧：
 
-1. 发布带前端的 release tarball  
-2. Formula 使用 `url` + `sha256`  
-3. `brew tap tokenlive/tokenlive && brew install tokenlive`
+```bash
+brew tap tokenlive/tokenlive
+brew install tokenlive
+# 升级：
+brew update && brew upgrade tokenlive
+brew services restart tokenlive
+```
+
+维护者：推 `vX.Y.Z` tag 到本仓即可触发 [`.github/workflows/release-brew.yml`](../.github/workflows/release-brew.yml)：
+
+1. 在 `macos-14` 上构建 `tokenlive-X.Y.Z-darwin-arm64.tar.gz`（bake `/opt/homebrew` 默认路径）
+2. 创建/更新 GitHub Release 并上传资产
+3. 更新 `tokenlive/homebrew-tokenlive` Formula 的 `version` / `url` / `sha256`
+
+本地等价命令：
+
+```bash
+VERSION=0.2.0 ./scripts/publish-brew-release.sh
+```
+
+一次性密钥（仓库 Secrets）：
+
+| Secret | 用途 |
+|--------|------|
+| `HOMEBREW_TAP_TOKEN` | 对 `tokenlive/homebrew-tokenlive` 有 `contents:write` 的 PAT，用于推 Formula |
+
+发版前请确认：
+
+1. `tokenlive-gateway` / `tokenlive-admin` 已打好对应 module tag  
+2. 本仓 `go.mod` 已 pin 到这些版本并提交  
+3. 再打本仓 `vX.Y.Z` 并 `git push origin vX.Y.Z`

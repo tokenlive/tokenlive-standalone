@@ -103,8 +103,10 @@ make smoke
 发布打包：
 
 ```bash
-VERSION=0.1.0 ./scripts/package-release.sh
+VERSION=0.2.0 BREW_PREFIX="$(brew --prefix)" ./scripts/package-release.sh
 ```
+
+推 `vX.Y.Z` tag 会自动打 tarball、发 GitHub Release、更新 Homebrew tap（见 [docs/homebrew.md](docs/homebrew.md)）。
 
 本地 Homebrew 安装（源码构建）：
 
@@ -118,6 +120,7 @@ VERSION=0.1.0 ./scripts/package-release.sh
 - [x] Gateway / Admin embed API
 - [x] ConfigHub + 热更新桥接
 - [x] 主线 tag 钉扎 + 正式 Homebrew tap
+- [x] 推 tag 自动发版（Release + tap Formula）
 - [ ] 完整 E2E（登录控制台 → 配模型 → chat completions）
 
 ## 许可

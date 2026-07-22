@@ -1,0 +1,110 @@
+# Push a version tag (vX.Y.Z) → build darwin-arm64 tarball, GitHub Release, update Homebrew tap.
+#
+# Required secret (one-time setup):
+#   HOMEBREW_TAP_TOKEN — PAT with contents:write on tokenlive/homebrew-tokenlive
+#                        (and ideally contents:read on this repo if the PAT is used as GH_TOKEN fallback)
+#
+# Manual re-run:
+#   gh workflow run release-brew.yml -f tag=v0.2.0
+#
+name: Release (Homebrew)
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing git tag to release (e.g. v0.2.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write   # create/upload GitHub Release assets
+
+concurrency:
+  group: release-brew-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build + publish brew release
+    # Prebuilt formula currently ships darwin-arm64 only (Apple Silicon).
+    runs-on: macos-14
+    timeout-minutes: 45
+
+    steps:
+      - name: Resolve tag
+        id: meta
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          [[ "$TAG" == v* ]] || { echo "tag must start with v (got: $TAG)" >&2; exit 1; }
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Releasing $TAG ($VERSION)"
+
+      - name: Checkout standalone @ tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.meta.outputs.tag }}
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          # Admin frontend is cloned at publish time; no lockfile in this repo.
+          node-version: "22"
+
+      - name: Install build tools
+        run: |
+          set -euo pipefail
+          # rsync is present on macOS runners; keep explicit for clarity
+          command -v rsync
+          command -v tar
+          command -v shasum
+          command -v gh
+
+      - name: Publish brew release
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+          BREW_PREFIX: /opt/homebrew
+          FORCE_WEB_BUILD: "1"
+          # Release upload (this repo)
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+          # Tap push — PAT with write access to tokenlive/homebrew-tokenlive
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          TAP_REPO: tokenlive/homebrew-tokenlive
+          STANDALONE_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${HOMEBREW_TAP_TOKEN:-}" ]]; then
+            echo "::error::Missing secret HOMEBREW_TAP_TOKEN (PAT with contents:write on tokenlive/homebrew-tokenlive)"
+            exit 1
+          fi
+          ./scripts/publish-brew-release.sh
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Homebrew release"
+            echo ""
+            echo "- tag: \`${{ steps.meta.outputs.tag }}\`"
+            echo "- version: \`${{ steps.meta.outputs.version }}\`"
+            echo "- release: https://github.com/${{ github.repository }}/releases/tag/${{ steps.meta.outputs.tag }}"
+            echo "- upgrade: \`brew update && brew upgrade tokenlive\`"
+          } >> "$GITHUB_STEP_SUMMARY"

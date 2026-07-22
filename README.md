@@ -103,7 +103,7 @@ make smoke
 Release packaging:
 
 ```bash
-VERSION=0.1.0 ./scripts/package-release.sh
+VERSION=0.2.0 BREW_PREFIX="$(brew --prefix)" ./scripts/package-release.sh
 ```
 
 Local Homebrew install (from source):
@@ -112,12 +112,15 @@ Local Homebrew install (from source):
 ./scripts/brew-install-local.sh
 ```
 
+Push a `vX.Y.Z` tag to run the full brew release chain (tarball + GitHub Release + tap Formula update). See [docs/homebrew.md](docs/homebrew.md).
+
 ## Status
 
 - [x] Scaffold + OpenSpec contract
 - [x] Gateway / Admin embed API
 - [x] ConfigHub + hot-reload bridge
 - [x] Published tags + official Homebrew tap
+- [x] Tag-triggered brew release Action
 - [ ] Full E2E (login → configure model → chat completions)
 
 ## License
