@@ -14,7 +14,7 @@
 class Tokenlive < Formula
   desc "TokenLive all-in-one LLM API gateway and admin console"
   homepage "https://github.com/tokenlive/tokenlive-standalone"
-  version "0.1.0"
+  version "0.2.0"
   license "Apache-2.0"
 
   head "https://github.com/tokenlive/tokenlive-standalone.git", branch: "master"
