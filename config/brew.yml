@@ -9,6 +9,10 @@ http:
 gateway:
   config_source: embedded
   state_store: memory
+  # Single-host self-report: gateway posts metrics/events back to the co-hosted
+  # admin over HTTP so the dashboard (总览) and ops monitor (运维看板) have data.
+  admin_url: http://127.0.0.1:2525
+  sync_token: ${GATEWAY_SYNC_TOKEN:}
 
 # Optional Redis — leave empty for pure single-host memory mode
 data:
@@ -55,7 +59,7 @@ pipelines:
     name: chat_completion
     request_types: ["chat_completion"]
     inbound_filters: ["auth", "validate"]
-    outbound_filters: ["metrics", "access_log"]
+    outbound_filters: ["metrics", "status_collector", "access_log", "event_publisher"]
     critical_outbound_filters: []
     invoker:
       type: cluster

@@ -59,6 +59,13 @@ func main() {
 	_ = os.Setenv("DB_TYPE", "sqlite3")
 	_ = os.Setenv("DB_DSN", dbPath)
 
+	// Single-host self-report: gateway posts metrics/events to the co-hosted admin
+	// over HTTP. Both sides read GATEWAY_SYNC_TOKEN; in-process the value only needs
+	// to match, so default it when unset to keep the dashboard working out of the box.
+	if os.Getenv("GATEWAY_SYNC_TOKEN") == "" {
+		_ = os.Setenv("GATEWAY_SYNC_TOKEN", "tokenlive-standalone-selfsync")
+	}
+
 	// Resolve log path under data-dir when using relative log_file_name from brew config.
 	if rel := v.GetString("log.log_file_name"); rel != "" && !filepath.IsAbs(rel) {
 		v.Set("log.log_file_name", filepath.Join(*dataDir, rel))

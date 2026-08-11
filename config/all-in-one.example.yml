@@ -11,6 +11,10 @@ http:
 gateway:
   config_source: embedded
   state_store: memory
+  # Single-host self-report: gateway posts metrics/events back to the co-hosted
+  # admin over HTTP so the dashboard (总览) and ops monitor (运维看板) have data.
+  admin_url: http://127.0.0.1:2525
+  sync_token: ${GATEWAY_SYNC_TOKEN:}
 
 data:
   redis:
@@ -54,8 +58,10 @@ pipelines:
   chat_completion:
     name: chat_completion
     request_types: ["chat_completion"]
-    inbound_filters: ["auth", "validate"]
-    outbound_filters: ["metrics", "access_log"]
+    # No "auth" inbound filter: this local profile runs with llm.enable_auth=false,
+    # so requests carry no user/tenant and the auth filter would 401 every call.
+    inbound_filters: ["validate"]
+    outbound_filters: ["metrics", "status_collector", "access_log", "event_publisher"]
     critical_outbound_filters: []
     invoker:
       type: cluster
@@ -66,6 +72,12 @@ pipelines:
         backoff_type: fixed
         base_ms: 0
         error_codes: ["500"]
+
+# Local fallback policy for single-host cold start: when no dynamic policy is
+# configured in the admin DB, the gateway would otherwise 403 with
+# "no dynamic policy matched". This permissive policy lets requests through.
+policies:
+  - permissions: ["*"]
 
 access_log:
   clickhouse:

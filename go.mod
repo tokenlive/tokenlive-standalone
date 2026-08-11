@@ -6,8 +6,8 @@ require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
-	github.com/tokenlive/tokenlive-admin v0.4.0
-	github.com/tokenlive/tokenlive-gateway v0.4.0
+	github.com/tokenlive/tokenlive-admin v0.5.0
+	github.com/tokenlive/tokenlive-gateway v0.5.0
 )
 
 require (
