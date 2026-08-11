@@ -126,6 +126,13 @@ echo "Stop:"
 echo "  brew services stop tokenlive"
 echo "  tokenlive-stop"
 echo
+echo "Logs & Status:"
+echo "  tokenlive logs                  # view running logs"
+echo "  tokenlive logs -f               # follow logs in real time"
+echo "  tokenlive logs -e               # view error logs only"
+echo "  tokenlive logs --check          # check if errors exist"
+echo "  tokenlive status                # view service status"
+echo
 echo "Open http://127.0.0.1:2525  — login admin / admin"
 
 # Try brew services; fall back is already installed via LaunchAgent
@@ -141,5 +148,5 @@ sleep 2
 if curl -sf http://127.0.0.1:2525/health >/dev/null; then
   echo "health: $(curl -s http://127.0.0.1:2525/health)"
 else
-  echo "health: not up yet — check $(brew --prefix)/var/log/tokenlive.err.log"
+  echo "health: not up yet — check logs with: tokenlive logs -e"
 fi

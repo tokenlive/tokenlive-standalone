@@ -54,6 +54,13 @@ class Tokenlive < Formula
         brew services start tokenlive
         # or: tokenlive
 
+      Logs & Status:
+        tokenlive logs          # view running logs
+        tokenlive logs -f       # follow logs (tail -f)
+        tokenlive logs -e       # show error logs only
+        tokenlive logs --check  # check for errors
+        tokenlive status        # check service status
+
       Open http://127.0.0.1:2525 — login admin / admin
       Config: #{etc}/tokenlive/config.yml
     EOS

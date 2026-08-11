@@ -34,12 +34,22 @@ cd tokenlive-standalone
 2. 安装到 Homebrew 前缀（`bin` / `etc` / `share` / `var`）
 3. 注册 LaunchAgent，供 `brew services` 使用
 
-### 启停
+### 启停与诊断
 
 ```bash
 brew services start tokenlive
 brew services stop tokenlive
 brew services list | grep tokenlive
+```
+
+查看运行日志与报错：
+
+```bash
+tokenlive logs          # 查看最近日志输出
+tokenlive logs -f       # 实时追踪日志 (tail -f)
+tokenlive logs -e       # 只看错误日志
+tokenlive logs --check  # 检测日志中是否有 ERROR / FATAL
+tokenlive status        # 查看服务状态与日志文件位置
 ```
 
 也可前台运行（无参数，路径已内置）：

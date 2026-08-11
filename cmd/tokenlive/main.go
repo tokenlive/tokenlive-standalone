@@ -12,6 +12,7 @@ import (
 	"github.com/tokenlive/tokenlive-gateway/pkg/config"
 	"github.com/tokenlive/tokenlive-gateway/pkg/log"
 	"github.com/tokenlive/tokenlive-standalone/internal/assemble"
+	"github.com/tokenlive/tokenlive-standalone/internal/cli"
 )
 
 // Build-time defaults (Homebrew / package-release via -ldflags -X).
@@ -25,6 +26,23 @@ var (
 )
 
 func main() {
+	info := cli.Info{
+		Version:             version,
+		DefaultConfigPath:   DefaultConfigPath,
+		DefaultDataDir:      DefaultDataDir,
+		DefaultAdminWorkDir: DefaultAdminWorkDir,
+		DefaultAdminStatic:  DefaultAdminStatic,
+	}
+
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "logs", "log", "-logs", "--logs":
+			os.Exit(cli.RunLogs(info, os.Args[2:]))
+		case "status", "-status", "--status":
+			os.Exit(cli.RunStatus(info, os.Args[2:]))
+		}
+	}
+
 	showVersion := flag.Bool("version", false, "print version and exit")
 
 	defaultConf := firstNonEmpty(DefaultConfigPath, "config/all-in-one.example.yml")

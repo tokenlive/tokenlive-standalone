@@ -29,11 +29,16 @@ brew services start tokenlive
 
 停止：`brew services stop tokenlive`
 
-卸载：
+### 查看运行日志与报错
+
+`tokenlive` 内置了日志查看与服务诊断工具，无需手动搜索日志路径：
 
 ```bash
-brew uninstall tokenlive
-brew untap tokenlive/tokenlive
+tokenlive logs          # 查看最近运行日志（自动识别 Homebrew 及应用日志）
+tokenlive logs -f       # 实时追踪日志输出 (tail -f)
+tokenlive logs -e       # 仅查看错误日志
+tokenlive logs --check  # 自动扫描并诊断日志中是否有报错
+tokenlive status        # 查看服务运行状态、监听端口与健康度
 ```
 
 详见 [docs/homebrew.md](docs/homebrew.md)
