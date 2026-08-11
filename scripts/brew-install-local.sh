@@ -49,7 +49,7 @@ install -m 755 "$STAGE/bin/tokenlive" "$KEG/bin/tokenlive"
 rsync -a "$STAGE/share/tokenlive/" "$KEG/share/tokenlive/"
 
 mkdir -p "$PREFIX/etc/tokenlive" "$PREFIX/var/tokenlive" "$PREFIX/var/log" "$PREFIX/share"
-if [[ ! -f "$PREFIX/etc/tokenlive/config.yml" ]]; then
+if [[ ! -f "$PREFIX/etc/tokenlive/config.yml" ]] || ! grep -q "events:" "$PREFIX/etc/tokenlive/config.yml"; then
   install -m 644 "$STAGE/etc/tokenlive/config.yml" "$PREFIX/etc/tokenlive/config.yml"
 fi
 install -m 644 "$STAGE/etc/tokenlive/config.example.yml" "$PREFIX/etc/tokenlive/config.example.yml"

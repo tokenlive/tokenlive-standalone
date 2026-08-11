@@ -61,27 +61,20 @@ func main() {
 		return
 	}
 
-	v := config.NewConfig(*confPath)
-	if err := assemble.ValidateAllInOne(v); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(2)
-	}
-
-	if err := os.MkdirAll(*dataDir, 0o755); err != nil {
-		fmt.Fprintf(os.Stderr, "data-dir: %v\n", err)
-		os.Exit(1)
-	}
-
-	// Force SQLite for all-in-one so ambient DB_TYPE=mysql cannot break startup.
-	dbPath := filepath.Join(*dataDir, "tokenlive.db")
-	_ = os.Setenv("DB_TYPE", "sqlite3")
-	_ = os.Setenv("DB_DSN", dbPath)
-
 	// Single-host self-report: gateway posts metrics/events to the co-hosted admin
 	// over HTTP. Both sides read GATEWAY_SYNC_TOKEN; in-process the value only needs
 	// to match, so default it when unset to keep the dashboard working out of the box.
 	if os.Getenv("GATEWAY_SYNC_TOKEN") == "" {
 		_ = os.Setenv("GATEWAY_SYNC_TOKEN", "tokenlive-standalone-selfsync")
+	}
+
+	v := config.NewConfig(*confPath)
+	if v.GetString("gateway.sync_token") == "" {
+		v.Set("gateway.sync_token", os.Getenv("GATEWAY_SYNC_TOKEN"))
+	}
+	if err := assemble.ValidateAllInOne(v); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(2)
 	}
 
 	// Resolve log path under data-dir when using relative log_file_name from brew config.

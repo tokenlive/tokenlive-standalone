@@ -21,6 +21,10 @@ data:
     password: ${REDIS_PASSWORD:}
     db: ${REDIS_DB:0}
 
+events:
+  enabled: true
+  type: http
+
 log:
   log_level: info
   mode: both
