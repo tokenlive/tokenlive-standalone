@@ -17,6 +17,14 @@ class Tokenlive < Formula
   version "0.5.0"
   license "Apache-2.0"
 
+  if Hardware::CPU.intel?
+    url "https://github.com/tokenlive/tokenlive-standalone/releases/download/v0.5.0/tokenlive-0.5.0-darwin-amd64.tar.gz"
+    sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+  else
+    url "https://github.com/tokenlive/tokenlive-standalone/releases/download/v0.5.0/tokenlive-0.5.0-darwin-arm64.tar.gz"
+    sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+  end
+
   head "https://github.com/tokenlive/tokenlive-standalone.git", branch: "master"
 
   depends_on "go" => :build

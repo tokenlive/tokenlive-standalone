@@ -52,25 +52,21 @@ VERSION="${raw_version#v}"
 [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-].*)?$ ]] || die "invalid version: $raw_version (expected semver, optional leading v)"
 
 TAG="v${VERSION}"
-ASSET="tokenlive-${VERSION}-darwin-arm64.tar.gz"
-BREW_PREFIX="${BREW_PREFIX:-/opt/homebrew}"
+ASSET_ARM64="tokenlive-${VERSION}-darwin-arm64.tar.gz"
+ASSET_AMD64="tokenlive-${VERSION}-darwin-amd64.tar.gz"
 FORCE_WEB_BUILD="${FORCE_WEB_BUILD:-1}"
 SKIP_RELEASE="${SKIP_RELEASE:-0}"
 SKIP_TAP="${SKIP_TAP:-0}"
 TAP_REPO="${TAP_REPO:-tokenlive/homebrew-tokenlive}"
 TAP_FORMULA_PATH="${TAP_FORMULA_PATH:-Formula/tokenlive.rb}"
 STANDALONE_REPO="${STANDALONE_REPO:-tokenlive/tokenlive-standalone}"
-OUT_DIR="${OUT_DIR:-$ROOT/dist/tokenlive-${VERSION}}"
 DIST_DIR="$ROOT/dist"
-TARBALL="$DIST_DIR/$ASSET"
 
-export VERSION OUT_DIR BREW_PREFIX FORCE_WEB_BUILD
+export VERSION FORCE_WEB_BUILD
 
 echo "==> publish brew release"
 echo "    version:  $VERSION  (tag $TAG)"
-echo "    brew:     $BREW_PREFIX"
-echo "    asset:    $ASSET"
-echo "    out:      $OUT_DIR"
+echo "    assets:   $ASSET_ARM64, $ASSET_AMD64"
 
 # --- resolve gateway / admin sources ----------------------------------------
 mod_ver() {
@@ -112,23 +108,36 @@ TOKENLIVE_ADMIN_SRC="$(resolve_dep_src TOKENLIVE_ADMIN_SRC github.com/tokenlive/
 echo "    gateway:  $TOKENLIVE_GATEWAY_SRC"
 echo "    admin:    $TOKENLIVE_ADMIN_SRC"
 
-# --- build package -----------------------------------------------------------
-"$ROOT/scripts/package-release.sh"
-[[ -x "$OUT_DIR/bin/tokenlive" ]] || die "missing binary after package-release"
-built_ver="$("$OUT_DIR/bin/tokenlive" -version | tr -d '[:space:]')"
-[[ "$built_ver" == "$VERSION" ]] || die "binary version mismatch: got '$built_ver', want '$VERSION'"
-
-# --- tarball -----------------------------------------------------------------
 mkdir -p "$DIST_DIR"
-rm -f "$TARBALL"
-# Match formula layout: bin/, share/, etc/ at archive root (no parent dir).
-tar -czf "$TARBALL" -C "$OUT_DIR" .
-SHA256="$(shasum -a 256 "$TARBALL" | awk '{print $1}')"
-echo "$SHA256  $ASSET" | tee "$TARBALL.sha256"
-ls -lh "$TARBALL"
+
+# --- build arm64 package ---------------------------------------------------
+echo "==> building darwin/arm64 package (brew prefix: /opt/homebrew)"
+OUT_DIR_ARM64="$DIST_DIR/tokenlive-${VERSION}-darwin-arm64"
+TARGET_GOOS=darwin TARGET_GOARCH=arm64 BREW_PREFIX=/opt/homebrew OUT_DIR="$OUT_DIR_ARM64" "$ROOT/scripts/package-release.sh"
+TARBALL_ARM64="$DIST_DIR/$ASSET_ARM64"
+rm -f "$TARBALL_ARM64"
+tar -czf "$TARBALL_ARM64" -C "$OUT_DIR_ARM64" .
+SHA256_ARM64="$(shasum -a 256 "$TARBALL_ARM64" | awk '{print $1}')"
+echo "$SHA256_ARM64  $ASSET_ARM64" | tee "$TARBALL_ARM64.sha256"
+ls -lh "$TARBALL_ARM64"
+
+# --- build amd64 package ---------------------------------------------------
+echo "==> building darwin/amd64 package (brew prefix: /usr/local)"
+OUT_DIR_AMD64="$DIST_DIR/tokenlive-${VERSION}-darwin-amd64"
+SKIP_WEB=1 TARGET_GOOS=darwin TARGET_GOARCH=amd64 BREW_PREFIX=/usr/local OUT_DIR="$OUT_DIR_AMD64" "$ROOT/scripts/package-release.sh"
+if [[ -d "$OUT_DIR_ARM64/share/tokenlive/web" ]]; then
+  mkdir -p "$OUT_DIR_AMD64/share/tokenlive/web"
+  rsync -a "$OUT_DIR_ARM64/share/tokenlive/web/" "$OUT_DIR_AMD64/share/tokenlive/web/"
+fi
+TARBALL_AMD64="$DIST_DIR/$ASSET_AMD64"
+rm -f "$TARBALL_AMD64"
+tar -czf "$TARBALL_AMD64" -C "$OUT_DIR_AMD64" .
+SHA256_AMD64="$(shasum -a 256 "$TARBALL_AMD64" | awk '{print $1}')"
+echo "$SHA256_AMD64  $ASSET_AMD64" | tee "$TARBALL_AMD64.sha256"
+ls -lh "$TARBALL_AMD64"
 
 if [[ "$SKIP_RELEASE" == "1" ]]; then
-  echo "==> SKIP_RELEASE=1 — tarball ready at $TARBALL"
+  echo "==> SKIP_RELEASE=1 — tarballs ready at $DIST_DIR"
   exit 0
 fi
 
@@ -136,7 +145,6 @@ need_token_for_release() {
   [[ -n "${GH_TOKEN:-${GITHUB_TOKEN:-}}" ]] || die "GH_TOKEN/GITHUB_TOKEN required to publish release"
 }
 need_token_for_release
-# gh prefers GH_TOKEN
 export GH_TOKEN="${GH_TOKEN:-$GITHUB_TOKEN}"
 
 # --- GitHub Release ----------------------------------------------------------
@@ -160,28 +168,31 @@ Data (\`\$(brew --prefix)/var/tokenlive\`) and config (\`\$(brew --prefix)/etc/t
 
 ### Assets
 
-- \`${ASSET}\` — Apple Silicon (darwin-arm64) prebuilt binary with baked Homebrew default paths
-- sha256: \`${SHA256}\`
+- \`${ASSET_ARM64}\` — Apple Silicon (darwin-arm64, prefix: \`/opt/homebrew\`)
+  - sha256: \`${SHA256_ARM64}\`
+- \`${ASSET_AMD64}\` — Intel macOS (darwin-amd64, prefix: \`/usr/local\`)
+  - sha256: \`${SHA256_AMD64}\`
 EOF
 )"
 
 if gh release view "$TAG" --repo "$STANDALONE_REPO" >/dev/null 2>&1; then
-  echo "    release exists — uploading/replacing asset"
-  # clobber existing asset if re-running
-  gh release upload "$TAG" "$TARBALL" "$TARBALL.sha256" \
+  echo "    release exists — uploading/replacing assets"
+  gh release upload "$TAG" "$TARBALL_ARM64" "$TARBALL_ARM64.sha256" "$TARBALL_AMD64" "$TARBALL_AMD64.sha256" \
     --repo "$STANDALONE_REPO" --clobber
   gh release edit "$TAG" --repo "$STANDALONE_REPO" --notes "$notes" >/dev/null
 else
-  gh release create "$TAG" "$TARBALL" "$TARBALL.sha256" \
+  gh release create "$TAG" "$TARBALL_ARM64" "$TARBALL_ARM64.sha256" "$TARBALL_AMD64" "$TARBALL_AMD64.sha256" \
     --repo "$STANDALONE_REPO" \
     --title "$TAG" \
     --notes "$notes"
 fi
 
 RELEASE_URL="$(gh release view "$TAG" --repo "$STANDALONE_REPO" --json url -q .url)"
-ASSET_URL="https://github.com/${STANDALONE_REPO}/releases/download/${TAG}/${ASSET}"
+ASSET_URL_ARM64="https://github.com/${STANDALONE_REPO}/releases/download/${TAG}/${ASSET_ARM64}"
+ASSET_URL_AMD64="https://github.com/${STANDALONE_REPO}/releases/download/${TAG}/${ASSET_AMD64}"
 echo "    release: $RELEASE_URL"
-echo "    asset:   $ASSET_URL"
+echo "    arm64 asset: $ASSET_URL_ARM64"
+echo "    amd64 asset: $ASSET_URL_AMD64"
 
 # --- update homebrew tap -----------------------------------------------------
 if [[ "$SKIP_TAP" == "1" ]]; then
@@ -197,19 +208,20 @@ TAP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/homebrew-tokenlive.XXXXXX")"
 cleanup_tap() { rm -rf "$TAP_DIR"; }
 trap cleanup_tap EXIT
 
-# Use x-access-token so the token is not echoed in remote -v on failure paths.
 git clone --depth 1 "https://x-access-token:${TAP_TOKEN}@github.com/${TAP_REPO}.git" "$TAP_DIR"
 FORMULA="$TAP_DIR/$TAP_FORMULA_PATH"
 [[ -f "$FORMULA" ]] || die "formula not found: $TAP_FORMULA_PATH in $TAP_REPO"
 
-# Rewrite version / url / sha256 in place (portable python — always on macOS runners).
-VERSION="$VERSION" ASSET_URL="$ASSET_URL" SHA256="$SHA256" FORMULA="$FORMULA" python3 - <<'PY'
+VERSION="$VERSION" ASSET_URL_ARM64="$ASSET_URL_ARM64" SHA256_ARM64="$SHA256_ARM64" \
+ASSET_URL_AMD64="$ASSET_URL_AMD64" SHA256_AMD64="$SHA256_AMD64" FORMULA="$FORMULA" python3 - <<'PY'
 import os, re, pathlib
 path = pathlib.Path(os.environ["FORMULA"])
 text = path.read_text()
 version = os.environ["VERSION"]
-url = os.environ["ASSET_URL"]
-sha = os.environ["SHA256"]
+url_arm64 = os.environ["ASSET_URL_ARM64"]
+sha_arm64 = os.environ["SHA256_ARM64"]
+url_amd64 = os.environ["ASSET_URL_AMD64"]
+sha_amd64 = os.environ["SHA256_AMD64"]
 
 def sub_one(pattern, repl, s, label):
     out, n = re.subn(pattern, repl, s, count=1)
@@ -218,9 +230,25 @@ def sub_one(pattern, repl, s, label):
     return out
 
 text = sub_one(r'version\s+"[^"]+"', f'version "{version}"', text, "version")
-text = sub_one(r'url\s+"https://github\.com/tokenlive/tokenlive-standalone/releases/download/[^"]+"',
-               f'url "{url}"', text, "url")
-text = sub_one(r'sha256\s+"[0-9a-fA-F]{64}"', f'sha256 "{sha}"', text, "sha256")
+
+if "Hardware::CPU.intel?" in text:
+    text = re.sub(
+        r'(if\s+Hardware::CPU\.intel\?\s*\n\s*url\s+)"[^"]+"(\s*\n\s*sha256\s+)"[^"]+"',
+        rf'\1"{url_amd64}"\2"{sha_amd64}"',
+        text,
+        count=1
+    )
+    text = re.sub(
+        r'(else\s*\n\s*url\s+)"[^"]+"(\s*\n\s*sha256\s+)"[^"]+"',
+        rf'\1"{url_arm64}"\2"{sha_arm64}"',
+        text,
+        count=1
+    )
+else:
+    text = sub_one(r'url\s+"https://github\.com/tokenlive/tokenlive-standalone/releases/download/[^"]+"',
+                   f'url "{url_arm64}"', text, "url")
+    text = sub_one(r'sha256\s+"[0-9a-fA-F]{64}"', f'sha256 "{sha_arm64}"', text, "sha256")
+
 path.write_text(text)
 print(path.read_text())
 PY
@@ -232,7 +260,7 @@ if git -C "$TAP_DIR" diff --quiet -- "$TAP_FORMULA_PATH"; then
   echo "    formula already up to date"
 else
   git -C "$TAP_DIR" add "$TAP_FORMULA_PATH"
-  git -C "$TAP_DIR" commit -m "tokenlive v${VERSION} formula (darwin-arm64)"
+  git -C "$TAP_DIR" commit -m "tokenlive v${VERSION} formula (darwin-arm64 & darwin-amd64)"
   git -C "$TAP_DIR" push origin HEAD
   echo "    pushed formula v${VERSION}"
 fi

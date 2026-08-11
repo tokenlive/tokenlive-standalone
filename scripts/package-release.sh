@@ -85,8 +85,10 @@ LDFLAGS=(
   go mod edit -replace="github.com/tokenlive/tokenlive-gateway=${GATEWAY_SRC}"
   go mod edit -replace="github.com/tokenlive/tokenlive-admin=${ADMIN_SRC}"
   go mod tidy
-  echo "==> go build"
-  go build -ldflags="${LDFLAGS[*]}" -o "bin/tokenlive" ./cmd/tokenlive
+  TARGET_GOOS="${TARGET_GOOS:-${GOOS:-darwin}}"
+  TARGET_GOARCH="${TARGET_GOARCH:-${GOARCH:-$(go env GOARCH)}}"
+  echo "==> go build ($TARGET_GOOS/$TARGET_GOARCH)"
+  GOOS="$TARGET_GOOS" GOARCH="$TARGET_GOARCH" go build -ldflags="${LDFLAGS[*]}" -o "bin/tokenlive" ./cmd/tokenlive
   cp bin/tokenlive "$OUT_DIR/bin/tokenlive"
 )
 
