@@ -14,6 +14,7 @@ build:
 
 test:
 	go test ./...
+	bash scripts/install-brew-config_test.sh
 
 tidy:
 	go mod tidy

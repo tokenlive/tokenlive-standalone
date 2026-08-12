@@ -212,46 +212,17 @@ git clone --depth 1 "https://x-access-token:${TAP_TOKEN}@github.com/${TAP_REPO}.
 FORMULA="$TAP_DIR/$TAP_FORMULA_PATH"
 [[ -f "$FORMULA" ]] || die "formula not found: $TAP_FORMULA_PATH in $TAP_REPO"
 
-VERSION="$VERSION" ASSET_URL_ARM64="$ASSET_URL_ARM64" SHA256_ARM64="$SHA256_ARM64" \
-ASSET_URL_AMD64="$ASSET_URL_AMD64" SHA256_AMD64="$SHA256_AMD64" FORMULA="$FORMULA" python3 - <<'PY'
-import os, re, pathlib
-path = pathlib.Path(os.environ["FORMULA"])
-text = path.read_text()
-version = os.environ["VERSION"]
-url_arm64 = os.environ["ASSET_URL_ARM64"]
-sha_arm64 = os.environ["SHA256_ARM64"]
-url_amd64 = os.environ["ASSET_URL_AMD64"]
-sha_amd64 = os.environ["SHA256_AMD64"]
+cp "$ROOT/packaging/homebrew/tokenlive.rb" "$FORMULA"
 
-def sub_one(pattern, repl, s, label):
-    out, n = re.subn(pattern, repl, s, count=1)
-    if n != 1:
-        raise SystemExit(f"failed to update {label}: expected 1 match, got {n}")
-    return out
+python3 "$ROOT/scripts/update_homebrew_formula.py" \
+  --formula "$FORMULA" \
+  --version "$VERSION" \
+  --arm64-url "$ASSET_URL_ARM64" \
+  --arm64-sha256 "$SHA256_ARM64" \
+  --amd64-url "$ASSET_URL_AMD64" \
+  --amd64-sha256 "$SHA256_AMD64"
 
-text = sub_one(r'version\s+"[^"]+"', f'version "{version}"', text, "version")
-
-if "Hardware::CPU.intel?" in text:
-    text = re.sub(
-        r'(if\s+Hardware::CPU\.intel\?\s*\n\s*url\s+)"[^"]+"(\s*\n\s*sha256\s+)"[^"]+"',
-        rf'\1"{url_amd64}"\2"{sha_amd64}"',
-        text,
-        count=1
-    )
-    text = re.sub(
-        r'(else\s*\n\s*url\s+)"[^"]+"(\s*\n\s*sha256\s+)"[^"]+"',
-        rf'\1"{url_arm64}"\2"{sha_arm64}"',
-        text,
-        count=1
-    )
-else:
-    text = sub_one(r'url\s+"https://github\.com/tokenlive/tokenlive-standalone/releases/download/[^"]+"',
-                   f'url "{url_arm64}"', text, "url")
-    text = sub_one(r'sha256\s+"[0-9a-fA-F]{64}"', f'sha256 "{sha_arm64}"', text, "sha256")
-
-path.write_text(text)
-print(path.read_text())
-PY
+cat "$FORMULA"
 
 git -C "$TAP_DIR" config user.name "${GIT_AUTHOR_NAME:-tokenlive-release[bot]}"
 git -C "$TAP_DIR" config user.email "${GIT_AUTHOR_EMAIL:-41898282+github-actions[bot]@users.noreply.github.com}"

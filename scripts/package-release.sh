@@ -30,7 +30,12 @@ echo "    out:     $OUT_DIR"
 [[ -n "$BREW_PREFIX" ]] && echo "    brew:    $BREW_PREFIX (bake defaults)"
 
 rm -rf "$OUT_DIR"
-mkdir -p "$OUT_DIR/bin" "$OUT_DIR/share/tokenlive/admin" "$OUT_DIR/share/tokenlive/web" "$OUT_DIR/etc/tokenlive"
+mkdir -p \
+  "$OUT_DIR/bin" \
+  "$OUT_DIR/libexec" \
+  "$OUT_DIR/share/tokenlive/admin" \
+  "$OUT_DIR/share/tokenlive/web" \
+  "$OUT_DIR/etc/tokenlive"
 
 if [[ "$SKIP_WEB" != "1" && -f "$ADMIN_SRC/frontend/package.json" ]]; then
   if [[ ! -f "$ADMIN_SRC/frontend/dist/index.html" ]] || [[ "${FORCE_WEB_BUILD:-0}" == "1" ]]; then
@@ -52,6 +57,7 @@ fi
 rsync -a "$ROOT/configs/admin/" "$OUT_DIR/share/tokenlive/admin/"
 cp "$ROOT/config/brew.yml" "$OUT_DIR/etc/tokenlive/config.yml"
 cp "$ROOT/config/all-in-one.example.yml" "$OUT_DIR/etc/tokenlive/config.example.yml"
+install -m 755 "$ROOT/scripts/install-brew-config.sh" "$OUT_DIR/libexec/install-brew-config.sh"
 
 BUILD_DIR="$(mktemp -d "${TMPDIR:-/tmp}/tokenlive-build.XXXXXX")"
 trap 'rm -rf "$BUILD_DIR"' EXIT

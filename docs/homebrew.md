@@ -63,11 +63,26 @@ tokenlive
 | 用途 | 路径 |
 |------|------|
 | 二进制 | `$(brew --prefix)/bin/tokenlive` |
-| 配置 | `$(brew --prefix)/etc/tokenlive/config.yml` |
+| 活动配置 | `$(brew --prefix)/etc/tokenlive/config.yml` |
+| 最新默认配置 | `$(brew --prefix)/etc/tokenlive/config.yml.default` |
 | 数据 | `$(brew --prefix)/var/tokenlive` |
 | Admin | `$(brew --prefix)/share/tokenlive/admin` |
 | SPA | `$(brew --prefix)/share/tokenlive/web` |
 | 服务日志 | `$(brew --prefix)/var/log/tokenlive.log` |
+
+### 配置升级规则
+
+- 如果活动配置与上一版默认配置完全一致，升级会自动安装新版默认配置。
+- 如果活动配置有任何修改（包括注释和空白），升级会保留活动配置。
+- 新版默认配置始终写入 `config.yml.default`，可手动比较：
+
+```bash
+diff "$(brew --prefix)/etc/tokenlive/config.yml" \
+     "$(brew --prefix)/etc/tokenlive/config.yml.default"
+```
+
+首次使用该升级机制且缺少 `config.yml.default` 时，安装程序会保留现有活动配置，
+只建立新的默认配置基准。
 
 ### 使用
 
