@@ -5,10 +5,10 @@ import re
 
 
 def replace_one(text: str, pattern: str, replacement: str, label: str) -> str:
-    updated, count = re.subn(pattern, replacement, text, count=1)
+    count = sum(1 for _ in re.finditer(pattern, text))
     if count != 1:
         raise SystemExit(f"failed to update {label}: expected 1 match, got {count}")
-    return updated
+    return re.sub(pattern, replacement, text, count=1)
 
 
 def main() -> None:

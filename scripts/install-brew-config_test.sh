@@ -19,6 +19,23 @@ assert_contains() {
   [[ "$1" == *"$2"* ]] || fail "expected output to contain: $2"
 }
 
+comparison_error_failures=0
+
+record_comparison_error_failure() {
+  echo "FAIL: $*" >&2
+  comparison_error_failures=$((comparison_error_failures + 1))
+}
+
+assert_comparison_error_same() {
+  cmp -s "$1" "$2" ||
+    record_comparison_error_failure "$1 and $2 differ"
+}
+
+assert_comparison_error_contains() {
+  [[ "$1" == *"$2"* ]] ||
+    record_comparison_error_failure "expected output to contain: $2"
+}
+
 write_default() {
   local path="$1"
   local marker="$2"
@@ -108,5 +125,54 @@ if run_helper "$new_v2" "$read_only" >/dev/null 2>&1; then
 fi
 chmod 700 "$read_only"
 assert_same "$TEST_ROOT/expected-read-only.yml" "$read_only/config.yml"
+
+unreadable_active="$TEST_ROOT/unreadable-active"
+run_helper "$new_v1" "$unreadable_active" >/dev/null
+cp "$unreadable_active/config.yml" "$TEST_ROOT/expected-unreadable-active.yml"
+cp \
+  "$unreadable_active/config.yml.default" \
+  "$TEST_ROOT/expected-unreadable-active-default.yml"
+chmod 000 "$unreadable_active/config.yml"
+if output="$(run_helper "$new_v2" "$unreadable_active" 2>&1)"; then
+  comparison_status=0
+else
+  comparison_status=$?
+fi
+chmod 644 "$unreadable_active/config.yml"
+[[ "$comparison_status" -ne 0 ]] ||
+  record_comparison_error_failure "unreadable active comparison unexpectedly succeeded"
+assert_comparison_error_contains "$output" "error: failed to compare active config with baseline"
+assert_comparison_error_same \
+  "$TEST_ROOT/expected-unreadable-active.yml" \
+  "$unreadable_active/config.yml"
+assert_comparison_error_same \
+  "$TEST_ROOT/expected-unreadable-active-default.yml" \
+  "$unreadable_active/config.yml.default"
+
+unreadable_baseline="$TEST_ROOT/unreadable-baseline"
+run_helper "$new_v1" "$unreadable_baseline" >/dev/null
+cp "$unreadable_baseline/config.yml" "$TEST_ROOT/expected-unreadable-baseline.yml"
+cp \
+  "$unreadable_baseline/config.yml.default" \
+  "$TEST_ROOT/expected-unreadable-baseline-default.yml"
+chmod 000 "$unreadable_baseline/config.yml.default"
+if output="$(run_helper "$new_v2" "$unreadable_baseline" 2>&1)"; then
+  comparison_status=0
+else
+  comparison_status=$?
+fi
+chmod 644 "$unreadable_baseline/config.yml.default"
+[[ "$comparison_status" -ne 0 ]] ||
+  record_comparison_error_failure "unreadable baseline comparison unexpectedly succeeded"
+assert_comparison_error_contains "$output" "error: failed to compare active config with baseline"
+assert_comparison_error_same \
+  "$TEST_ROOT/expected-unreadable-baseline.yml" \
+  "$unreadable_baseline/config.yml"
+assert_comparison_error_same \
+  "$TEST_ROOT/expected-unreadable-baseline-default.yml" \
+  "$unreadable_baseline/config.yml.default"
+
+[[ "$comparison_error_failures" -eq 0 ]] ||
+  fail "$comparison_error_failures comparison error assertion(s) failed"
 
 echo "PASS: install-brew-config"

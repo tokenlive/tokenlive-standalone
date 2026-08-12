@@ -45,6 +45,10 @@ elif cmp -s "$ACTIVE" "$BASELINE"; then
   atomic_install "$NEW_DEFAULT" "$ACTIVE"
   echo "config: upgraded unmodified config"
 else
+  comparison_status=$?
+  if [[ "$comparison_status" -gt 1 ]]; then
+    die "failed to compare active config with baseline"
+  fi
   atomic_install "$NEW_DEFAULT" "$BASELINE"
   echo "config: preserved user-modified config"
   echo "config: compare with: diff \"$ACTIVE\" \"$BASELINE\""
