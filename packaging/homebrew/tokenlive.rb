@@ -25,34 +25,21 @@ class Tokenlive < Formula
     sha256 "0000000000000000000000000000000000000000000000000000000000000000"
   end
 
-  head "https://github.com/tokenlive/tokenlive-standalone.git", branch: "master"
-
-  depends_on "go" => :build
-  depends_on "node" => :build
-  depends_on "rsync" => :build
-
   def install
-    gateway = ENV.fetch("TOKENLIVE_GATEWAY_SRC")
-    admin = ENV.fetch("TOKENLIVE_ADMIN_SRC")
-    ENV["TOKENLIVE_GATEWAY_SRC"] = File.expand_path(gateway)
-    ENV["TOKENLIVE_ADMIN_SRC"] = File.expand_path(admin)
-    ENV["VERSION"] = version.to_s
-    ENV["OUT_DIR"] = (buildpath/"stage").to_s
-    ENV["BREW_PREFIX"] = HOMEBREW_PREFIX.to_s
-
-    system "bash", "scripts/package-release.sh"
-
-    bin.install "stage/bin/tokenlive"
-    (pkgshare/"admin").install Dir["stage/share/tokenlive/admin/*"]
+    bin.install "bin/tokenlive"
+    (pkgshare/"admin").install Dir["share/tokenlive/admin/*"]
     (pkgshare/"web").mkpath
-    if (buildpath/"stage/share/tokenlive/web/index.html").exist?
-      (pkgshare/"web").install Dir["stage/share/tokenlive/web/*"]
-    end
+    (pkgshare/"web").install Dir["share/tokenlive/web/*"] if Dir["share/tokenlive/web/*"].any?
+    libexec.install "libexec/install-brew-config.sh"
 
     (etc/"tokenlive").mkpath
-    (etc/"tokenlive").install "stage/etc/tokenlive/config.yml" unless (etc/"tokenlive/config.yml").exist?
+    system "bash",
+           libexec/"install-brew-config.sh",
+           buildpath/"etc/tokenlive/config.yml",
+           etc/"tokenlive"
+
     rm_f etc/"tokenlive/config.example.yml"
-    (etc/"tokenlive").install "stage/etc/tokenlive/config.example.yml"
+    (etc/"tokenlive").install "etc/tokenlive/config.example.yml"
     (var/"tokenlive").mkpath
   end
 
@@ -63,14 +50,18 @@ class Tokenlive < Formula
         # or: tokenlive
 
       Logs & Status:
-        tokenlive logs          # view running logs
-        tokenlive logs -f       # follow logs (tail -f)
-        tokenlive logs -e       # show error logs only
-        tokenlive logs --check  # check for errors
-        tokenlive status        # check service status
+        tokenlive logs
+        tokenlive logs -f
+        tokenlive logs -e
+        tokenlive logs --check
+        tokenlive status
 
       Open http://127.0.0.1:2525 — login admin / admin
-      Config: #{etc}/tokenlive/config.yml
+      Active config: #{etc}/tokenlive/config.yml
+      Latest default: #{etc}/tokenlive/config.yml.default
+
+      Modified active configs are preserved during upgrades. Compare with:
+        diff #{etc}/tokenlive/config.yml #{etc}/tokenlive/config.yml.default
     EOS
   end
 
