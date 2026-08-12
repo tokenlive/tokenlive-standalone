@@ -12,7 +12,7 @@
 | 形态 | 仓库 / 制品 | 适用场景 |
 |------|-------------|----------|
 | **分部署（主线）** | [tokenlive-gateway](https://github.com/tokenlive/tokenlive-gateway) + [tokenlive-admin](https://github.com/tokenlive/tokenlive-admin) | 生产 / 多实例 |
-| **All-in-one（本仓）** | `tokenlive` 二进制 | 单机 / Homebrew |
+| **All-in-one（本仓）** | `tokenlive` 二进制 | 单机 / Homebrew / Linux / Docker |
 
 本仓**不**替代主线双进程部署。Gateway + Admin 必须同时启用。
 
@@ -42,6 +42,40 @@ tokenlive status        # 查看服务运行状态、监听端口与健康度
 ```
 
 详见 [docs/homebrew.md](docs/homebrew.md)
+
+### Linux（tarball + systemd）
+
+一行安装（自动识别架构，安装二进制 + 配置 + systemd 服务）：
+
+```bash
+curl -fsSL https://github.com/tokenlive/tokenlive-standalone/releases/download/v0.4.0/tokenlive-0.4.0-linux-services.tar.gz | tar -xz
+sudo bin/install-linux.sh 0.4.0
+# http://127.0.0.1:2525  —  admin / admin
+```
+
+服务管理：
+
+```bash
+sudo systemctl status tokenlive
+sudo systemctl restart tokenlive
+journalctl -u tokenlive -f        # 查看日志
+```
+
+路径：二进制 `/usr/local/bin/tokenlive`，配置 `/etc/tokenlive/config.yml`，数据 `/var/lib/tokenlive`。
+
+### Docker
+
+```bash
+docker run -d --name tokenlive \
+  -p 2525:2525 \
+  -v tokenlive-data:/var/lib/tokenlive \
+  -v tokenlive-config:/etc/tokenlive \
+  --restart unless-stopped \
+  ghcr.io/tokenlive/tokenlive:latest
+# http://127.0.0.1:2525  —  admin / admin
+```
+
+挂载自定义 `config.yml` 到 `/etc/tokenlive/config.yml` 即可覆盖配置。
 
 ### 从源码构建
 
@@ -126,6 +160,8 @@ VERSION=0.2.0 BREW_PREFIX="$(brew --prefix)" ./scripts/package-release.sh
 - [x] ConfigHub + 热更新桥接
 - [x] 主线 tag 钉扎 + 正式 Homebrew tap
 - [x] 推 tag 自动发版（Release + tap Formula）
+- [x] Linux tarball（amd64 + arm64）+ systemd
+- [x] Docker 多架构镜像（ghcr.io）
 - [ ] 完整 E2E（登录控制台 → 配模型 → chat completions）
 
 ## 许可

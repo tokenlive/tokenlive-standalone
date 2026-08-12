@@ -1,0 +1,19 @@
+[Unit]
+Description=TokenLive all-in-one LLM API gateway and admin console
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/tokenlive
+WorkingDirectory=/var/lib/tokenlive
+Restart=on-failure
+RestartSec=3
+LimitNOFILE=65535
+
+# Environment overrides (uncomment as needed):
+# Environment=GATEWAY_API_KEY_PEPPER=change-me
+# Environment=OPENAI_API_KEY=sk-...
+# Environment=REDIS_ADDR=127.0.0.1:6379
+
+[Install]
+WantedBy=multi-user.target

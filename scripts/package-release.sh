@@ -2,7 +2,10 @@
 # Build tokenlive binary + share assets for Homebrew / tarball install.
 #
 # TOKENLIVE_GATEWAY_SRC / TOKENLIVE_ADMIN_SRC — sibling modules
-# BREW_PREFIX — if set, bake default paths into the binary
+# BREW_PREFIX — if set, bake default paths into the binary (Homebrew style)
+# DEFAULT_CONF / DEFAULT_DATA / DEFAULT_ADMIN_DIR / DEFAULT_WEB_DIR
+#       — explicit path overrides (take precedence over BREW_PREFIX); used for Linux
+# CONFIG_FILE — source config copied to etc/tokenlive/config.yml (default: config/brew.yml)
 # VERSION / OUT_DIR / SKIP_WEB / FORCE_WEB_BUILD
 set -euo pipefail
 
@@ -15,6 +18,7 @@ GATEWAY_SRC="${TOKENLIVE_GATEWAY_SRC:-$ROOT/../tokenlive-gateway}"
 ADMIN_SRC="${TOKENLIVE_ADMIN_SRC:-$ROOT/../tokenlive-admin}"
 SKIP_WEB="${SKIP_WEB:-0}"
 BREW_PREFIX="${BREW_PREFIX:-}"
+CONFIG_FILE="${CONFIG_FILE:-config/brew.yml}"
 
 die() { echo "error: $*" >&2; exit 1; }
 
@@ -55,7 +59,7 @@ else
 fi
 
 rsync -a "$ROOT/configs/admin/" "$OUT_DIR/share/tokenlive/admin/"
-cp "$ROOT/config/brew.yml" "$OUT_DIR/etc/tokenlive/config.yml"
+cp "$ROOT/$CONFIG_FILE" "$OUT_DIR/etc/tokenlive/config.yml"
 cp "$ROOT/config/all-in-one.example.yml" "$OUT_DIR/etc/tokenlive/config.example.yml"
 install -m 755 "$ROOT/scripts/install-brew-config.sh" "$OUT_DIR/libexec/install-brew-config.sh"
 
@@ -66,15 +70,15 @@ rsync -a --exclude '.git' --exclude 'bin' --exclude 'data' --exclude 'dist' --ex
   "$ROOT/" "$BUILD_DIR/"
 
 if [[ -n "$BREW_PREFIX" ]]; then
-  DEFAULT_CONF="${BREW_PREFIX}/etc/tokenlive/config.yml"
-  DEFAULT_DATA="${BREW_PREFIX}/var/tokenlive"
-  DEFAULT_ADMIN="${BREW_PREFIX}/share/tokenlive/admin"
-  DEFAULT_WEB="${BREW_PREFIX}/share/tokenlive/web"
+  DEFAULT_CONF="${DEFAULT_CONF:-${BREW_PREFIX}/etc/tokenlive/config.yml}"
+  DEFAULT_DATA="${DEFAULT_DATA:-${BREW_PREFIX}/var/tokenlive}"
+  DEFAULT_ADMIN="${DEFAULT_ADMIN_DIR:-${BREW_PREFIX}/share/tokenlive/admin}"
+  DEFAULT_WEB="${DEFAULT_WEB_DIR:-${BREW_PREFIX}/share/tokenlive/web}"
 else
-  DEFAULT_CONF=""
-  DEFAULT_DATA=""
-  DEFAULT_ADMIN=""
-  DEFAULT_WEB=""
+  DEFAULT_CONF="${DEFAULT_CONF:-}"
+  DEFAULT_DATA="${DEFAULT_DATA:-}"
+  DEFAULT_ADMIN="${DEFAULT_ADMIN_DIR:-}"
+  DEFAULT_WEB="${DEFAULT_WEB_DIR:-}"
 fi
 
 LDFLAGS=(

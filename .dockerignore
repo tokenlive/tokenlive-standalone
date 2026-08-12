@@ -1,0 +1,14 @@
+.git
+.github
+.deps
+bin
+data
+dist
+docs
+node_modules
+openspec
+*.md
+LICENSE
+Dockerfile
+.dockerignore
+Makefile

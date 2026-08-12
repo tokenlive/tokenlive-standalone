@@ -1,4 +1,4 @@
-.PHONY: build test run tidy smoke package brew-install brew-uninstall
+.PHONY: build test run tidy smoke package package-linux brew-install brew-uninstall
 
 BINARY ?= bin/tokenlive
 CONF ?= config/all-in-one.example.yml
@@ -6,7 +6,7 @@ ADMIN_WORKDIR ?= configs/admin
 ADMIN_CONFIG ?=
 ADMIN_STATIC ?=
 DATA_DIR ?= data
-VERSION ?= 0.2.0
+VERSION ?= 0.4.0
 
 build:
 	mkdir -p bin
@@ -51,6 +51,10 @@ smoke: build
 # Full release layout under dist/ (binary + admin share + web + etc)
 package:
 	VERSION=$(VERSION) ./scripts/package-release.sh
+
+# Linux release tarballs (amd64 + arm64) under dist/
+package-linux:
+	VERSION=$(VERSION) SKIP_RELEASE=1 ./scripts/publish-linux-release.sh
 
 # Local Homebrew-style install + LaunchAgent / brew services
 brew-install:

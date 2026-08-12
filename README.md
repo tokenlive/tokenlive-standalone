@@ -12,7 +12,7 @@ English | [中文版](./README-zh.md)
 | Mode | Repos / Artifacts | Best for |
 |------|-------------------|----------|
 | **Separate (primary)** | [tokenlive-gateway](https://github.com/tokenlive/tokenlive-gateway) + [tokenlive-admin](https://github.com/tokenlive/tokenlive-admin) | Production, multi-instance |
-| **All-in-one (this repo)** | `tokenlive` binary | Single-host / Homebrew |
+| **All-in-one (this repo)** | `tokenlive` binary | Single-host / Homebrew / Linux / Docker |
 
 This repo does **not** replace the primary dual-process deployment. Both Gateway and Admin must run together.
 
@@ -37,6 +37,40 @@ brew untap tokenlive/tokenlive
 ```
 
 Details: [docs/homebrew.md](docs/homebrew.md)
+
+### Linux (tarball + systemd)
+
+One-line install (auto-detects arch, installs binary + config + systemd service):
+
+```bash
+curl -fsSL https://github.com/tokenlive/tokenlive-standalone/releases/download/v0.4.0/tokenlive-0.4.0-linux-services.tar.gz | tar -xz
+sudo bin/install-linux.sh 0.4.0
+# http://127.0.0.1:2525  —  admin / admin
+```
+
+Manage the service:
+
+```bash
+sudo systemctl status tokenlive
+sudo systemctl restart tokenlive
+journalctl -u tokenlive -f        # logs
+```
+
+Paths: binary `/usr/local/bin/tokenlive`, config `/etc/tokenlive/config.yml`, data `/var/lib/tokenlive`.
+
+### Docker
+
+```bash
+docker run -d --name tokenlive \
+  -p 2525:2525 \
+  -v tokenlive-data:/var/lib/tokenlive \
+  -v tokenlive-config:/etc/tokenlive \
+  --restart unless-stopped \
+  ghcr.io/tokenlive/tokenlive:latest
+# http://127.0.0.1:2525  —  admin / admin
+```
+
+Override config by mounting a custom `config.yml` at `/etc/tokenlive/config.yml`.
 
 ### From Source
 
@@ -121,6 +155,8 @@ Push a `vX.Y.Z` tag to run the full brew release chain (tarball + GitHub Release
 - [x] ConfigHub + hot-reload bridge
 - [x] Published tags + official Homebrew tap
 - [x] Tag-triggered brew release Action
+- [x] Linux tarball (amd64 + arm64) + systemd
+- [x] Docker image (multi-arch) on ghcr.io
 - [ ] Full E2E (login → configure model → chat completions)
 
 ## License

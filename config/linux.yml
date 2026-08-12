@@ -1,0 +1,80 @@
+# Default config for Linux package (etc/tokenlive/config.yml).
+# Paths under data-dir / share are baked into the binary at build time
+# (/var/lib/tokenlive, /usr/share/tokenlive) or set by the systemd unit.
+
+env: prod
+http:
+  host: 127.0.0.1
+  port: 2525
+
+gateway:
+  config_source: embedded
+  state_store: memory
+  admin_url: http://127.0.0.1:2525
+  sync_token: ${GATEWAY_SYNC_TOKEN:}
+
+data:
+  redis:
+    addr: ${REDIS_ADDR:}
+    password: ${REDIS_PASSWORD:}
+    db: ${REDIS_DB:0}
+
+events:
+  enabled: true
+  type: http
+
+log:
+  log_level: info
+  mode: both
+  encoding: json
+  log_file_name: "logs/tokenlive.log"
+  max_backups: 7
+  max_age: 14
+  max_size: 100
+  compress: true
+
+llm:
+  enable_auth: true
+  enable_metrics: true
+  enable_logging: true
+  api_key_pepper: ${GATEWAY_API_KEY_PEPPER:}
+
+models:
+  gpt-4:
+    request_types: [chat_completion]
+    endpoints:
+      - provider: openai-local
+        url: http://127.0.0.1:9/v1
+        real_model: gpt-4
+        priority: 1
+        weight: 100
+
+providers:
+  openai-local:
+    protocol: openai
+    api_key: ${OPENAI_API_KEY:sk-placeholder}
+    timeout: 60s
+
+pipelines:
+  chat_completion:
+    name: chat_completion
+    request_types: ["chat_completion"]
+    inbound_filters: ["auth", "validate"]
+    outbound_filters: ["metrics", "status_collector", "access_log", "event_publisher"]
+    critical_outbound_filters: []
+    invoker:
+      type: cluster
+      routers: ["capability", "priority"]
+      load_balancer: round_robin
+      retry:
+        retry: 0
+        backoff_type: fixed
+        base_ms: 0
+        error_codes: ["500"]
+
+access_log:
+  clickhouse:
+    enabled: false
+
+policies:
+  - permissions: ["*"]

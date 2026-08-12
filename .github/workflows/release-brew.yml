@@ -1,4 +1,4 @@
-# Push a version tag (vX.Y.Z) → build darwin-arm64 tarball, GitHub Release, update Homebrew tap.
+# Push a version tag (vX.Y.Z) → build macOS + Linux releases, Docker images.
 #
 # Required secret (one-time setup):
 #   HOMEBREW_TAP_TOKEN — PAT with contents:write on tokenlive/homebrew-tokenlive
@@ -7,7 +7,7 @@
 # Manual re-run:
 #   gh workflow run release-brew.yml -f tag=v0.2.0
 #
-name: Release (Homebrew)
+name: Release
 
 on:
   push:
@@ -22,15 +22,15 @@ on:
 
 permissions:
   contents: write   # create/upload GitHub Release assets
+  packages: write   # push Docker images to ghcr.io
 
 concurrency:
-  group: release-brew-${{ github.ref }}
+  group: release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: Build + publish brew release
-    # Prebuilt formula currently ships darwin-arm64 only (Apple Silicon).
+  build-macos:
+    name: macOS (Homebrew)
     runs-on: macos-14
     timeout-minutes: 45
 
@@ -65,13 +65,11 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          # Admin frontend is cloned at publish time; no lockfile in this repo.
           node-version: "22"
 
       - name: Install build tools
         run: |
           set -euo pipefail
-          # rsync is present on macOS runners; keep explicit for clarity
           command -v rsync
           command -v tar
           command -v shasum
@@ -82,10 +80,8 @@ jobs:
           VERSION: ${{ steps.meta.outputs.version }}
           BREW_PREFIX: /opt/homebrew
           FORCE_WEB_BUILD: "1"
-          # Release upload (this repo)
           GH_TOKEN: ${{ github.token }}
           GITHUB_TOKEN: ${{ github.token }}
-          # Tap push — PAT with write access to tokenlive/homebrew-tokenlive
           HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           TAP_REPO: tokenlive/homebrew-tokenlive
           STANDALONE_REPO: ${{ github.repository }}
@@ -107,4 +103,120 @@ jobs:
             echo "- version: \`${{ steps.meta.outputs.version }}\`"
             echo "- release: https://github.com/${{ github.repository }}/releases/tag/${{ steps.meta.outputs.tag }}"
             echo "- upgrade: \`brew update && brew upgrade tokenlive\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  build-linux:
+    name: Linux (tarball + Docker)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Resolve tag
+        id: meta
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          [[ "$TAG" == v* ]] || { echo "tag must start with v (got: $TAG)" >&2; exit 1; }
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Releasing $TAG ($VERSION)"
+
+      - name: Checkout standalone @ tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.meta.outputs.tag }}
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install build tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends rsync
+          command -v rsync
+          command -v tar
+          command -v sha256sum
+          command -v gh
+
+      - name: Build + upload linux tarballs
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+          FORCE_WEB_BUILD: "1"
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+          STANDALONE_REPO: ${{ github.repository }}
+        run: ./scripts/publish-linux-release.sh
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build + push Docker images (amd64 + arm64)
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+          IMAGE: ghcr.io/${{ github.repository_owner }}/tokenlive
+        run: |
+          set -euo pipefail
+          DIST="$PWD/dist"
+          # amd64
+          rm -rf stage && cp -a "$DIST/tokenlive-${VERSION}-linux-amd64" stage
+          docker buildx build --platform linux/amd64 \
+            -t "$IMAGE:${VERSION}-amd64" \
+            --provenance=false --push .
+
+          # arm64
+          rm -rf stage && cp -a "$DIST/tokenlive-${VERSION}-linux-arm64" stage
+          docker buildx build --platform linux/arm64 \
+            -t "$IMAGE:${VERSION}-arm64" \
+            --provenance=false --push .
+
+          # multi-arch manifest
+          docker manifest create "$IMAGE:${VERSION}" \
+            "$IMAGE:${VERSION}-amd64" "$IMAGE:${VERSION}-arm64"
+          docker manifest push "$IMAGE:${VERSION}"
+
+          # latest tag
+          docker manifest create "$IMAGE:latest" \
+            "$IMAGE:${VERSION}-amd64" "$IMAGE:${VERSION}-arm64"
+          docker manifest push "$IMAGE:latest"
+
+          echo "==> Docker images pushed:"
+          echo "    $IMAGE:${VERSION} (amd64 + arm64)"
+          echo "    $IMAGE:latest"
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Linux release"
+            echo ""
+            echo "- tag: \`${{ steps.meta.outputs.tag }}\`"
+            echo "- version: \`${{ steps.meta.outputs.version }}\`"
+            echo "- release: https://github.com/${{ github.repository }}/releases/tag/${{ steps.meta.outputs.tag }}"
+            echo "- docker: \`ghcr.io/${{ github.repository_owner }}/tokenlive:${{ steps.meta.outputs.version }}\`"
+            echo "- install: \`curl -fsSL https://github.com/${{ github.repository }}/releases/download/${{ steps.meta.outputs.tag }}/tokenlive-${{ steps.meta.outputs.version }}-linux-services.tar.gz | tar -xz && sudo bin/install-linux.sh ${{ steps.meta.outputs.version }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
