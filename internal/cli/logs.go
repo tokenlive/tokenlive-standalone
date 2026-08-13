@@ -181,7 +181,9 @@ func RunLogs(info Info, args []string) int {
 	useColor := isTerminalOutput()
 
 	if *follow {
-		return followLogs(targets, *lines, *showErrOnly, useColor)
+		ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+		defer stop()
+		return followLogs(ctx, os.Stdout, targets, *lines, *showErrOnly, useColor)
 	}
 
 	// Normal tail N lines mode
@@ -190,7 +192,7 @@ func RunLogs(info Info, args []string) int {
 			if i > 0 {
 				fmt.Println()
 			}
-			printBanner(target.Tag, target.Path, useColor)
+			printBanner(os.Stdout, target.Tag, target.Path, useColor)
 		}
 
 		linesRead := readLastNLines(target.Path, *lines)
@@ -328,15 +330,13 @@ func readLastNLines(path string, n int) []string {
 	return lines
 }
 
-func followLogs(targets []LogFileInfo, initialN int, showErrOnly, useColor bool) int {
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer stop()
-
+func followLogs(ctx context.Context, w io.Writer, targets []LogFileInfo, initialN int, showErrOnly, useColor bool) int {
 	type fileState struct {
 		target LogFileInfo
 		file   *os.File
 		reader *bufio.Reader
 		offset int64
+		fi     os.FileInfo
 	}
 
 	states := make([]*fileState, 0, len(targets))
@@ -345,20 +345,20 @@ func followLogs(targets []LogFileInfo, initialN int, showErrOnly, useColor bool)
 		if err != nil {
 			continue
 		}
-		printBanner(target.Tag, target.Path, useColor)
+		printBanner(w, target.Tag, target.Path, useColor)
 
 		initialLines := readLastNLines(target.Path, initialN)
 		for _, l := range initialLines {
 			if showErrOnly && !isErrorLine(l) {
 				continue
 			}
-			fmt.Println(formatLogLine(l, useColor))
+			fmt.Fprintln(w, formatLogLine(l, useColor))
 		}
 
-		st, _ := f.Stat()
+		fi, _ := f.Stat()
 		offset := int64(0)
-		if st != nil {
-			offset = st.Size()
+		if fi != nil {
+			offset = fi.Size()
 		}
 		_, _ = f.Seek(offset, io.SeekStart)
 
@@ -367,35 +367,92 @@ func followLogs(targets []LogFileInfo, initialN int, showErrOnly, useColor bool)
 			file:   f,
 			reader: bufio.NewReader(f),
 			offset: offset,
+			fi:     fi,
 		})
 	}
 	defer func() {
 		for _, s := range states {
-			_ = s.file.Close()
+			if s.file != nil {
+				_ = s.file.Close()
+			}
 		}
 	}()
 
+	multi := len(states) > 1
 	ticker := time.NewTicker(250 * time.Millisecond)
 	defer ticker.Stop()
+
+	emit := func(s *fileState, lineStr string) {
+		if !showErrOnly || isErrorLine(lineStr) {
+			if multi {
+				fmt.Fprintf(w, "[%s] %s\n", s.target.Tag, formatLogLine(lineStr, useColor))
+			} else {
+				fmt.Fprintln(w, formatLogLine(lineStr, useColor))
+			}
+		}
+	}
 
 	for {
 		select {
 		case <-ctx.Done():
-			fmt.Println("\nLog tailing stopped.")
+			fmt.Fprintln(w, "\nLog tailing stopped.")
 			return 0
 		case <-ticker.C:
 			for _, s := range states {
+				// If the handle is closed (file was removed/rotated on a prior
+				// tick), try to reopen the path so monitoring resumes once the
+				// file reappears.
+				if s.file == nil {
+					f, err := os.Open(s.target.Path)
+					if err != nil {
+						continue
+					}
+					s.file = f
+					s.reader = bufio.NewReader(f)
+					s.fi, _ = f.Stat()
+					s.offset = 0
+				}
+
+				// Detect rotation/truncation by comparing the path's current
+				// identity against the open handle. lumberjack rotates by
+				// renaming the active file and creating a fresh one with the
+				// same name (new inode); without reopening, we'd keep reading
+				// the stale renamed file and miss every subsequent line.
+				if pathFi, err := os.Stat(s.target.Path); err == nil {
+					switch {
+					case s.fi != nil && !os.SameFile(pathFi, s.fi):
+						// Rotated: reopen the new file from the start.
+						_ = s.file.Close()
+						if f, err := os.Open(s.target.Path); err == nil {
+							s.file = f
+							s.reader = bufio.NewReader(f)
+							s.fi, _ = f.Stat()
+							s.offset = 0
+						} else {
+							s.file = nil
+							s.fi = nil
+							continue
+						}
+					case pathFi.Size() < s.offset:
+						// Truncated in place: rewind to the beginning.
+						_, _ = s.file.Seek(0, io.SeekStart)
+						s.reader = bufio.NewReader(s.file)
+						s.offset = 0
+					}
+				} else if os.IsNotExist(err) {
+					// File removed; wait for it to be recreated.
+					_ = s.file.Close()
+					s.file = nil
+					s.fi = nil
+					continue
+				}
+
+				// Drain fully-buffered lines.
 				for {
 					line, err := s.reader.ReadString('\n')
 					if line != "" {
-						lineStr := strings.TrimRight(line, "\r\n")
-						if !showErrOnly || isErrorLine(lineStr) {
-							if len(states) > 1 {
-								fmt.Printf("[%s] %s\n", s.target.Tag, formatLogLine(lineStr, useColor))
-							} else {
-								fmt.Println(formatLogLine(lineStr, useColor))
-							}
-						}
+						s.offset += int64(len(line))
+						emit(s, strings.TrimRight(line, "\r\n"))
 					}
 					if err != nil {
 						break
@@ -478,12 +535,12 @@ func RunStatus(info Info, args []string) int {
 	return 0
 }
 
-func printBanner(tag, path string, useColor bool) {
+func printBanner(w io.Writer, tag, path string, useColor bool) {
 	banner := fmt.Sprintf("--- Log: [%s] %s ---", tag, path)
 	if useColor {
-		fmt.Printf("\033[1;36m%s\033[0m\n", banner)
+		fmt.Fprintf(w, "\033[1;36m%s\033[0m\n", banner)
 	} else {
-		fmt.Println(banner)
+		fmt.Fprintln(w, banner)
 	}
 }
 
