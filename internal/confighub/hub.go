@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	gwconfig "github.com/tokenlive/tokenlive-gateway/pkg/config"
 )
@@ -79,6 +80,26 @@ func (h *Hub) Refresh(ctx context.Context, kind string) error {
 		h.OnReload(ctx, kind)
 	}
 	return nil
+}
+
+// StartPeriodicSync starts a background goroutine that periodically refreshes the hub
+// as a safety net against missed config events. It runs until ctx is cancelled.
+func (h *Hub) StartPeriodicSync(ctx context.Context, interval time.Duration) {
+	if interval <= 0 {
+		interval = 15 * time.Second
+	}
+	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				_ = h.Refresh(ctx, "all")
+			}
+		}
+	}()
 }
 
 func (h *Hub) applySnapshot(snap *Snapshot) error {

@@ -142,6 +142,7 @@ func New(ctx context.Context, opt Options) (*App, error) {
 		// Soft-fail: keep YAML seed models so Engine can start; host can retry after seeding admin.
 		opt.Logger.Logger.Sugar().Warnf("confighub initial refresh: %v (using YAML seed until admin has data)", err)
 	}
+	hub.StartPeriodicSync(ctx, 15*time.Second)
 
 	hub.OnReload = func(ctx context.Context, kind string) {
 		if app.Gateway == nil {
