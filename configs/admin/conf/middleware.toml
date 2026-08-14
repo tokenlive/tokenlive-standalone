@@ -69,7 +69,7 @@ DB = 10
 
 [Middleware.Casbin]
 Disable = false
-SkippedPathPrefixes = ["/api/v1/captcha", "/api/v1/captcha/", "/api/v1/login", "/api/v1/current/", "/api/v1/oauth"]
+SkippedPathPrefixes = ["/api/v1/captcha", "/api/v1/captcha/", "/api/v1/login", "/api/v1/refresh-token", "/api/v1/current/", "/api/v1/oauth"]
 LoadThread = 2
 AutoLoadInterval = 3 # seconds
 ModelFile = "rbac_model.conf"
