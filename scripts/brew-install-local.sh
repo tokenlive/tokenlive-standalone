@@ -55,10 +55,12 @@ mkdir -p "$PREFIX/etc/tokenlive" "$PREFIX/var/tokenlive" "$PREFIX/var/log" "$PRE
 install -m 644 "$STAGE/etc/tokenlive/config.example.yml" "$PREFIX/etc/tokenlive/config.example.yml"
 
 # Links
-rm -rf "$OPT"
-ln -sfn "$KEG" "$OPT"
-ln -sfn "$OPT/bin/tokenlive" "$PREFIX/bin/tokenlive"
-ln -sfn "$OPT/share/tokenlive" "$PREFIX/share/tokenlive"
+brew link --overwrite tokenlive 2>/dev/null || {
+  rm -rf "$OPT"
+  ln -sfn "$KEG" "$OPT"
+  ln -sfn "$OPT/bin/tokenlive" "$PREFIX/bin/tokenlive"
+  ln -sfn "$OPT/share/tokenlive" "$PREFIX/share/tokenlive"
+}
 
 # LaunchAgent — same shape brew services uses (binary only; paths from ldflags)
 mkdir -p "$HOME/Library/LaunchAgents"
