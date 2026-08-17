@@ -48,8 +48,8 @@ tokenlive status        # 查看服务运行状态、监听端口与健康度
 一行安装（自动识别架构，安装二进制 + 配置 + systemd 服务）：
 
 ```bash
-curl -fsSL https://github.com/tokenlive/tokenlive-standalone/releases/download/v0.6.0/tokenlive-0.6.0-linux-services.tar.gz | tar -xz
-sudo bin/install-linux.sh 0.6.0
+curl -fsSL https://github.com/tokenlive/tokenlive-standalone/releases/download/v0.7.0/tokenlive-0.7.0-linux-services.tar.gz | tar -xz
+sudo bin/install-linux.sh 0.7.0
 # http://127.0.0.1:2525  —  admin / admin
 ```
 
