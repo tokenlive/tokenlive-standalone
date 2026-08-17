@@ -155,6 +155,7 @@ func New(ctx context.Context, opt Options) (*App, error) {
 			}
 			app.Gateway.PurgeAPIKeyCache()
 			app.Gateway.PurgePolicyCache()
+			app.Gateway.PurgeAliasCache()
 		case "policies":
 			app.Gateway.PurgePolicyCache()
 		case "apikeys":
@@ -162,6 +163,7 @@ func New(ctx context.Context, opt Options) (*App, error) {
 		default:
 			app.Gateway.PurgeAPIKeyCache()
 			app.Gateway.PurgePolicyCache()
+			app.Gateway.PurgeAliasCache()
 		}
 	}
 

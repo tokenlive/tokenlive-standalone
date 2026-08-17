@@ -15,7 +15,7 @@
 # Required tools: bash, go, node/npm, rsync, tar, shasum (or sha256sum), git, gh
 #
 # Env:
-#   VERSION              — e.g. 0.7.1 (or v0.7.1). Default: git tag / GITHUB_REF_NAME
+#   VERSION              — e.g. 0.7.2 (or v0.7.2). Default: git tag / GITHUB_REF_NAME
 #   FORCE_WEB_BUILD=1    — rebuild admin frontend (default in CI)
 #   SKIP_RELEASE=1       — build tarballs only, skip GitHub Release upload
 #   STANDALONE_REPO      — default: tokenlive/tokenlive-standalone
