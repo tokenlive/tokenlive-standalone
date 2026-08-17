@@ -39,6 +39,8 @@ llm:
   enable_logging: true
   api_key_pepper: ${GATEWAY_API_KEY_PEPPER:}
 
+models: {}
+providers: {}
 
 pipelines:
   chat_completion:

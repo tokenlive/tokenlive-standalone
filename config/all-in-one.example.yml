@@ -41,6 +41,8 @@ llm:
   enable_metrics: false
   enable_logging: true
 
+models: {}
+providers: {}
 
 pipelines:
   chat_completion:
