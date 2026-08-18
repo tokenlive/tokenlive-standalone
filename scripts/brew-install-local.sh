@@ -48,6 +48,42 @@ mkdir -p "$KEG/bin" "$KEG/share"
 install -m 755 "$STAGE/bin/tokenlive" "$KEG/bin/tokenlive"
 rsync -a "$STAGE/share/tokenlive/" "$KEG/share/tokenlive/"
 
+# Generate INSTALL_RECEIPT.json so Homebrew recognises tokenlive as an installed formula
+cat >"$KEG/INSTALL_RECEIPT.json" <<EOF
+{
+  "homebrew_version": "6.0.0",
+  "used_options": [],
+  "unused_options": [],
+  "built_as_bottle": false,
+  "poured_from_bottle": false,
+  "installed_on_request": true,
+  "changed_files": null,
+  "time": $(date +%s),
+  "source_modified_time": $(date +%s),
+  "compiler": "clang",
+  "aliases": [],
+  "runtime_dependencies": [],
+  "source": {
+    "path": "$ROOT/packaging/homebrew/tokenlive.rb",
+    "tap": "tokenlive/tokenlive",
+    "tap_git_head": null,
+    "spec": "stable",
+    "versions": {
+      "stable": "${VERSION}",
+      "head": null,
+      "version_scheme": 0,
+      "compatibility_version": null
+    }
+  },
+  "arch": "$(uname -m)",
+  "built_on": {
+    "os": "Macintosh",
+    "os_version": "macOS",
+    "cpu_family": "$(uname -m)"
+  }
+}
+EOF
+
 mkdir -p "$PREFIX/etc/tokenlive" "$PREFIX/var/tokenlive" "$PREFIX/var/log" "$PREFIX/share"
 "$ROOT/scripts/install-brew-config.sh" \
   "$STAGE/etc/tokenlive/config.yml" \
@@ -62,9 +98,8 @@ brew link --overwrite tokenlive 2>/dev/null || {
   ln -sfn "$OPT/share/tokenlive" "$PREFIX/share/tokenlive"
 }
 
-# LaunchAgent — same shape brew services uses (binary only; paths from ldflags)
-mkdir -p "$HOME/Library/LaunchAgents"
-cat >"$USER_PLIST" <<EOF
+# Service definition files for Homebrew
+cat >"$KEG/homebrew.mxcl.tokenlive.plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -96,9 +131,26 @@ cat >"$USER_PLIST" <<EOF
 </dict>
 </plist>
 EOF
-# Also place plist where brew services discovers keg services
-cp "$USER_PLIST" "$KEG/homebrew.mxcl.tokenlive.plist"
-ln -sfn "$KEG/homebrew.mxcl.tokenlive.plist" "$OPT/homebrew.mxcl.tokenlive.plist"
+
+cat >"$KEG/homebrew.tokenlive.service" <<EOF
+[Unit]
+Description=Homebrew generated unit for tokenlive
+
+[Install]
+WantedBy=default.target
+
+[Service]
+Type=simple
+ExecStart="${OPT}/bin/tokenlive"
+Restart=always
+WorkingDirectory=${PREFIX}/var/tokenlive
+StandardOutput=append:${PREFIX}/var/log/tokenlive.log
+StandardError=append:${PREFIX}/var/log/tokenlive.err.log
+EOF
+
+# Sync to User LaunchAgents
+mkdir -p "$HOME/Library/LaunchAgents"
+cp "$KEG/homebrew.mxcl.tokenlive.plist" "$USER_PLIST"
 
 # Wrapper helpers (optional; brew services is preferred)
 cat >"$PREFIX/bin/tokenlive-start" <<EOF
