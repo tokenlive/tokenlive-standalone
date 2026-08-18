@@ -1,0 +1,58 @@
+{
+  "policy_invocation": [
+    {
+      "id": "d8h2r2gvvio19hqfnuo0",
+      "name": "3次重试+90秒TTFT+180秒读超时+10分钟总超时",
+      "type": "failover",
+      "retry_policy": {
+        "retry": 3,
+        "base_ms": 0,
+        "version": 1787066763412,
+        "code_policy": null,
+        "error_codes": ["500", "429", "403", "402", "503", "401", "400", "410"],
+        "backoff_type": "fixed",
+        "idle_timeout": 180000,
+        "ttft_timeout": 90000,
+        "total_timeout": 600000,
+        "error_messages": ["Internal server error", "no available endpoint"],
+        "message_policy": null,
+        "connect_timeout": 15000,
+        "exclude_failed_endpoint": true
+      },
+      "version": 1787066763412,
+      "enabled": 1,
+      "description": "",
+      "model_id": "",
+      "scope_type": "global",
+      "scope_code": "",
+      "priority": 0
+    }
+  ],
+  "policy_circuit_break": [
+    {
+      "id": "d8ik2351kt69mj8omb30",
+      "name": "4xx/5xx实例熔断",
+      "level": "INSTANCE",
+      "sliding_window_type": "time",
+      "sliding_window_size": 60,
+      "min_calls_threshold": 2,
+      "failure_rate_threshold": 50.0,
+      "slow_call_rate_threshold": 0.0,
+      "slow_call_duration_threshold": 0,
+      "slow_call_metric": "",
+      "wait_duration_in_open_state": 60000,
+      "allowed_calls_in_half_open_state": 2,
+      "force_open": 0,
+      "outlier_max_percent": 100,
+      "error_codes": ["500", "429", "404", "503", "403", "402", "400"],
+      "error_messages": ["Internal server error"],
+      "version": 1787067091180,
+      "enabled": 1,
+      "description": "通用熔断策略",
+      "model_id": "",
+      "scope_type": "global",
+      "scope_code": "",
+      "priority": 0
+    }
+  ]
+}

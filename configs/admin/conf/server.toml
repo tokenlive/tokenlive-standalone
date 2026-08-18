@@ -10,6 +10,7 @@ DisableSwagger = true
 DisablePrintConfig = true
 DefaultLoginPwd = "21232f297a57a5a743894a0e4a801fc3"
 MenuFile = "menu.json"
+PolicySeedFile = "policy_seed.json"
 DenyOperateMenu = false
 
 [General.HTTP]
