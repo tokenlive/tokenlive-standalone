@@ -9,3 +9,10 @@
 *.log
 .worktrees/
 .superpowers/
+/.opencode/
+/.codex/
+/openspec/
+/.agent/
+/.agents/
+/.zcode/
+/.claude/
