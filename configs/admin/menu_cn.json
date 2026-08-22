@@ -107,7 +107,7 @@
                 "sequence": 65,
                 "type": "page",
                 "path": "/monitor/portal-workspaces",
-                "status": "enabled",
+                "status": "disabled",
                 "resources": [
                     {
                         "method": "GET",
@@ -1009,7 +1009,7 @@
                 "sequence": 90,
                 "type": "page",
                 "path": "/space/list",
-                "status": "enabled",
+                "status": "disabled",
                 "children": [
                     {
                         "code": "add",
@@ -1308,7 +1308,7 @@
                 "sequence": 65,
                 "type": "page",
                 "path": "/space/model-catalog",
-                "status": "enabled",
+                "status": "disabled",
                 "children": [
                     {
                         "code": "add",
