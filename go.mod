@@ -7,7 +7,7 @@ require (
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
 	github.com/tokenlive/tokenlive-admin v0.9.3
-	github.com/tokenlive/tokenlive-gateway v0.9.2
+	github.com/tokenlive/tokenlive-gateway v0.9.3
 )
 
 require (
