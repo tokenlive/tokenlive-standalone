@@ -51,7 +51,7 @@ pipelines:
     # No "auth" inbound filter: this local profile runs with llm.enable_auth=false,
     # so requests carry no user/tenant and the auth filter would 401 every call.
     inbound_filters: ["validate"]
-    outbound_filters: ["metrics", "status_collector", "access_log", "event_publisher"]
+    outbound_filters: ["token_settlement", "metrics", "status_collector", "access_log", "event_publisher"]
     critical_outbound_filters: []
     invoker:
       type: cluster
@@ -67,7 +67,7 @@ pipelines:
     name: responses
     request_types: ["responses"]
     inbound_filters: ["validate"]
-    outbound_filters: ["metrics", "status_collector", "access_log", "event_publisher"]
+    outbound_filters: ["token_settlement", "metrics", "status_collector", "access_log", "event_publisher"]
     critical_outbound_filters: []
     invoker:
       type: cluster
@@ -83,7 +83,7 @@ pipelines:
     name: messages
     request_types: ["messages"]
     inbound_filters: ["validate"]
-    outbound_filters: ["metrics", "status_collector", "access_log", "event_publisher"]
+    outbound_filters: ["token_settlement", "metrics", "status_collector", "access_log", "event_publisher"]
     critical_outbound_filters: []
     invoker:
       type: cluster

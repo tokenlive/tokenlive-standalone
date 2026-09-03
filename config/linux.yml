@@ -47,7 +47,7 @@ pipelines:
     name: chat_completion
     request_types: ["chat_completion"]
     inbound_filters: ["auth", "validate"]
-    outbound_filters: ["metrics", "status_collector", "access_log", "event_publisher"]
+    outbound_filters: ["token_settlement", "metrics", "status_collector", "access_log", "event_publisher"]
     critical_outbound_filters: []
     invoker:
       type: cluster
@@ -63,7 +63,7 @@ pipelines:
     name: responses
     request_types: ["responses"]
     inbound_filters: ["auth", "validate"]
-    outbound_filters: ["metrics", "status_collector", "access_log", "event_publisher"]
+    outbound_filters: ["token_settlement", "metrics", "status_collector", "access_log", "event_publisher"]
     critical_outbound_filters: []
     invoker:
       type: cluster
@@ -79,7 +79,7 @@ pipelines:
     name: messages
     request_types: ["messages"]
     inbound_filters: ["auth", "validate"]
-    outbound_filters: ["metrics", "status_collector", "access_log", "event_publisher"]
+    outbound_filters: ["token_settlement", "metrics", "status_collector", "access_log", "event_publisher"]
     critical_outbound_filters: []
     invoker:
       type: cluster
