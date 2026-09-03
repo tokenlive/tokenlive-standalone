@@ -903,7 +903,7 @@
                 "sequence": 75,
                 "type": "page",
                 "path": "/system/tenant",
-                "status": "enabled",
+                "status": "disabled",
                 "children": [
                     {
                         "code": "add",
