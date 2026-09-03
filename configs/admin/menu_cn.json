@@ -985,7 +985,7 @@
                 "sequence": 10,
                 "type": "page",
                 "path": "/system/logger",
-                "status": "enabled",
+                "status": "disabled",
                 "resources": [
                     {
                         "method": "GET",
