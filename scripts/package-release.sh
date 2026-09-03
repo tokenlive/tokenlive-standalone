@@ -12,7 +12,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-VERSION="${VERSION:-0.0.0-dev}"
+VERSION="${VERSION:-1.0.0}"
 OUT_DIR="${OUT_DIR:-$ROOT/dist/tokenlive-${VERSION}}"
 GATEWAY_SRC="${TOKENLIVE_GATEWAY_SRC:-$ROOT/../tokenlive-gateway}"
 ADMIN_SRC="${TOKENLIVE_ADMIN_SRC:-$ROOT/../tokenlive-admin}"
@@ -46,7 +46,7 @@ if [[ "$SKIP_WEB" != "1" && -f "$ADMIN_SRC/frontend/package.json" ]]; then
     echo "==> building admin frontend"
     ( cd "$ADMIN_SRC/frontend"
       [[ -d node_modules ]] || npm ci
-      npm run build:prod
+      VITE_APP_VERSION="${VERSION}" npm run build:prod
     )
   else
     echo "==> reuse existing frontend dist"

@@ -63,6 +63,38 @@ pipelines:
         base_ms: 0
         error_codes: ["500"]
 
+  responses:
+    name: responses
+    request_types: ["responses"]
+    inbound_filters: ["validate"]
+    outbound_filters: ["metrics", "status_collector", "access_log", "event_publisher"]
+    critical_outbound_filters: []
+    invoker:
+      type: cluster
+      routers: ["capability", "priority"]
+      load_balancer: round_robin
+      retry:
+        retry: 0
+        backoff_type: fixed
+        base_ms: 0
+        error_codes: ["500"]
+
+  messages:
+    name: messages
+    request_types: ["messages"]
+    inbound_filters: ["validate"]
+    outbound_filters: ["metrics", "status_collector", "access_log", "event_publisher"]
+    critical_outbound_filters: []
+    invoker:
+      type: cluster
+      routers: ["capability", "priority"]
+      load_balancer: round_robin
+      retry:
+        retry: 0
+        backoff_type: fixed
+        base_ms: 0
+        error_codes: ["500"]
+
 # Local fallback policy for single-host cold start: when no dynamic policy is
 # configured in the admin DB, the gateway would otherwise 403 with
 # "no dynamic policy matched". This permissive policy lets requests through.

@@ -61,6 +61,38 @@ pipelines:
         base_ms: 0
         error_codes: ["500"]
 
+  responses:
+    name: responses
+    request_types: ["responses"]
+    inbound_filters: ["auth", "validate"]
+    outbound_filters: ["metrics", "status_collector", "access_log", "event_publisher"]
+    critical_outbound_filters: []
+    invoker:
+      type: cluster
+      routers: ["capability", "priority"]
+      load_balancer: round_robin
+      retry:
+        retry: 0
+        backoff_type: fixed
+        base_ms: 0
+        error_codes: ["500"]
+
+  messages:
+    name: messages
+    request_types: ["messages"]
+    inbound_filters: ["auth", "validate"]
+    outbound_filters: ["metrics", "status_collector", "access_log", "event_publisher"]
+    critical_outbound_filters: []
+    invoker:
+      type: cluster
+      routers: ["capability", "priority"]
+      load_balancer: round_robin
+      retry:
+        retry: 0
+        backoff_type: fixed
+        base_ms: 0
+        error_codes: ["500"]
+
 access_log:
   clickhouse:
     enabled: false

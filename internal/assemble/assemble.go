@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"github.com/tokenlive/tokenlive-admin/adminapp"
+	gwconfig "github.com/tokenlive/tokenlive-gateway/pkg/config"
 	"github.com/tokenlive/tokenlive-gateway/pkg/gateway"
 	"github.com/tokenlive/tokenlive-gateway/pkg/log"
 	"github.com/tokenlive/tokenlive-standalone/internal/bridge"
@@ -144,6 +145,16 @@ func New(ctx context.Context, opt Options) (*App, error) {
 	}
 	hub.StartPeriodicSync(ctx, 15*time.Second)
 
+	applyHubConfig := func(cfg *gwconfig.GatewayConfig) error {
+		if cfg == nil || app.Gateway == nil {
+			return nil
+		}
+		if len(cfg.Pipelines) == 0 && opt.GatewayConf != nil {
+			_ = opt.GatewayConf.UnmarshalKey("pipelines", &cfg.Pipelines)
+		}
+		return app.Gateway.ApplyGatewayConfig(cfg)
+	}
+
 	hub.OnReload = func(ctx context.Context, kind string) {
 		if app.Gateway == nil {
 			return
@@ -151,7 +162,7 @@ func New(ctx context.Context, opt Options) (*App, error) {
 		switch kind {
 		case "endpoints", "all":
 			if cfg := hub.GatewayConfig(); cfg != nil && len(cfg.Models) > 0 {
-				_ = app.Gateway.ApplyGatewayConfig(cfg)
+				_ = applyHubConfig(cfg)
 			}
 			app.Gateway.PurgeAPIKeyCache()
 			app.Gateway.PurgePolicyCache()
@@ -182,7 +193,7 @@ func New(ctx context.Context, opt Options) (*App, error) {
 
 	// Apply admin snapshot to engine if we have models
 	if cfg := hub.GatewayConfig(); cfg != nil && len(cfg.Models) > 0 {
-		if err := gw.ApplyGatewayConfig(cfg); err != nil {
+		if err := applyHubConfig(cfg); err != nil {
 			opt.Logger.Logger.Sugar().Warnf("apply embedded config: %v", err)
 		}
 	}
