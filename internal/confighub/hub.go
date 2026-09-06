@@ -1,6 +1,7 @@
 package confighub
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -32,6 +33,11 @@ type Hub struct {
 	policies []gwconfig.HTTPPolicyItem
 	apiKeys  map[string]*gwconfig.HTTPApiKeyItem
 	version  atomic.Uint64
+
+	lastConfigJSON   []byte
+	lastPoliciesJSON []byte
+	lastAPIKeysJSON  []byte
+	loaded           bool
 
 	// OnReload is called after a successful Refresh (host applies Engine update).
 	OnReload func(ctx context.Context, kind string)
@@ -72,9 +78,13 @@ func (h *Hub) Refresh(ctx context.Context, kind string) error {
 	if err != nil {
 		return err
 	}
+	if h.snapshotUnchanged(snap) {
+		return nil
+	}
 	if err := h.applySnapshot(snap); err != nil {
 		return err
 	}
+	h.rememberSnapshot(snap)
 	h.version.Add(1)
 	if h.OnReload != nil {
 		h.OnReload(ctx, kind)
@@ -141,6 +151,38 @@ func (h *Hub) applySnapshot(snap *Snapshot) error {
 	h.apiKeys = keys
 	h.mu.Unlock()
 	return nil
+}
+
+func (h *Hub) snapshotUnchanged(snap *Snapshot) bool {
+	if snap == nil {
+		return false
+	}
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	if !h.loaded {
+		return false
+	}
+	return bytes.Equal(h.lastConfigJSON, snap.ConfigJSON) &&
+		bytes.Equal(h.lastPoliciesJSON, snap.PoliciesJSON) &&
+		bytes.Equal(h.lastAPIKeysJSON, snap.APIKeysJSON)
+}
+
+func (h *Hub) rememberSnapshot(snap *Snapshot) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.lastConfigJSON = cloneBytes(snap.ConfigJSON)
+	h.lastPoliciesJSON = cloneBytes(snap.PoliciesJSON)
+	h.lastAPIKeysJSON = cloneBytes(snap.APIKeysJSON)
+	h.loaded = true
+}
+
+func cloneBytes(in []byte) []byte {
+	if in == nil {
+		return nil
+	}
+	out := make([]byte, len(in))
+	copy(out, in)
+	return out
 }
 
 type provider struct {

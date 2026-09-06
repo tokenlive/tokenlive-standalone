@@ -39,8 +39,8 @@ func TestHub_RefreshAndProvider(t *testing.T) {
 	require.NoError(t, err)
 
 	hub := confighub.New(&staticSrc{snap: &confighub.Snapshot{
-		ConfigJSON:  cfgJSON,
-		APIKeysJSON: keyJSON,
+		ConfigJSON:   cfgJSON,
+		APIKeysJSON:  keyJSON,
 		PoliciesJSON: []byte("[]"),
 	}})
 
@@ -66,4 +66,47 @@ func TestHub_RefreshAndProvider(t *testing.T) {
 
 	_, err = p.GetApiKey(context.Background(), "missing")
 	require.Error(t, err)
+}
+
+func TestHub_RefreshSkipsUnchangedSnapshot(t *testing.T) {
+	cfg := gwconfig.GatewayConfig{
+		Models: map[string]gwconfig.ModelConfig{
+			"m1": {RequestTypes: []string{"chat_completion"}},
+		},
+	}
+	cfgJSON, err := json.Marshal(cfg)
+	require.NoError(t, err)
+
+	src := &staticSrc{snap: &confighub.Snapshot{
+		ConfigJSON:   cfgJSON,
+		PoliciesJSON: []byte("[]"),
+		APIKeysJSON:  []byte("[]"),
+	}}
+	hub := confighub.New(src)
+
+	var reloads []string
+	hub.OnReload = func(ctx context.Context, kind string) {
+		reloads = append(reloads, kind)
+	}
+
+	require.NoError(t, hub.Refresh(context.Background(), "all"))
+	require.Equal(t, []string{"all"}, reloads)
+	require.Equal(t, uint64(1), hub.Version())
+
+	require.NoError(t, hub.Refresh(context.Background(), "all"))
+	require.Equal(t, []string{"all"}, reloads)
+	require.Equal(t, uint64(1), hub.Version())
+
+	cfg.Models["m2"] = gwconfig.ModelConfig{RequestTypes: []string{"responses"}}
+	cfgJSON, err = json.Marshal(cfg)
+	require.NoError(t, err)
+	src.snap = &confighub.Snapshot{
+		ConfigJSON:   cfgJSON,
+		PoliciesJSON: []byte("[]"),
+		APIKeysJSON:  []byte("[]"),
+	}
+
+	require.NoError(t, hub.Refresh(context.Background(), "all"))
+	require.Equal(t, []string{"all", "all"}, reloads)
+	require.Equal(t, uint64(2), hub.Version())
 }

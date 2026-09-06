@@ -61,9 +61,8 @@ func main() {
 		return
 	}
 
-	// Single-host self-report: gateway posts metrics/events to the co-hosted admin
-	// over HTTP. Both sides read GATEWAY_SYNC_TOKEN; in-process the value only needs
-	// to match, so default it when unset to keep the dashboard working out of the box.
+	// All-in-one metrics go in-process. GATEWAY_SYNC_TOKEN still defaults so
+	// leftover HTTP event/sync paths keep working when admin_url is set.
 	if os.Getenv("GATEWAY_SYNC_TOKEN") == "" {
 		_ = os.Setenv("GATEWAY_SYNC_TOKEN", "tokenlive-standalone-selfsync")
 	}

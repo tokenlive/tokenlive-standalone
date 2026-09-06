@@ -182,6 +182,7 @@ func New(ctx context.Context, opt Options) (*App, error) {
 	gw, cleanup, err := gateway.New(opt.GatewayConf, opt.Logger, &gateway.Options{
 		Provider:       hub.Provider(),
 		SkipClickHouse: true,
+		MetricsSink:    bridge.AdminMetricsSink{},
 	})
 	if err != nil {
 		_ = adminApp.Shutdown(ctx)

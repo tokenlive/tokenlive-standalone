@@ -11,8 +11,8 @@ http:
 gateway:
   config_source: embedded
   state_store: memory
-  # Single-host self-report: gateway posts metrics/events back to the co-hosted
-  # admin over HTTP so the dashboard (总览) and ops monitor (运维看板) have data.
+  # admin_url is unused for metrics in all-in-one (in-process sink).
+  # Kept for dual-process / events fallback.
   admin_url: http://127.0.0.1:2525
   sync_token: ${GATEWAY_SYNC_TOKEN:}
 

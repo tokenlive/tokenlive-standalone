@@ -14,14 +14,14 @@
 class Tokenlive < Formula
   desc "TokenLive all-in-one LLM API gateway and admin console"
   homepage "https://github.com/tokenlive/tokenlive-standalone"
-  version "0.9.5"
+  version "0.9.6"
   license "Apache-2.0"
 
   if Hardware::CPU.intel?
-    url "https://github.com/tokenlive/tokenlive-standalone/releases/download/v0.9.5/tokenlive-0.9.5-darwin-amd64.tar.gz"
+    url "https://github.com/tokenlive/tokenlive-standalone/releases/download/v0.9.6/tokenlive-0.9.6-darwin-amd64.tar.gz"
     sha256 "0000000000000000000000000000000000000000000000000000000000000000"
   else
-    url "https://github.com/tokenlive/tokenlive-standalone/releases/download/v0.9.5/tokenlive-0.9.5-darwin-arm64.tar.gz"
+    url "https://github.com/tokenlive/tokenlive-standalone/releases/download/v0.9.6/tokenlive-0.9.6-darwin-arm64.tar.gz"
     sha256 "0000000000000000000000000000000000000000000000000000000000000000"
   end
 
