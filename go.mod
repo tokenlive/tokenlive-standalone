@@ -1,13 +1,13 @@
 module github.com/tokenlive/tokenlive-standalone
 
-go 1.25.0
+go 1.27.1
 
 require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
-	github.com/tokenlive/tokenlive-admin v0.9.4
-	github.com/tokenlive/tokenlive-gateway v0.9.6
+	github.com/tokenlive/tokenlive-admin v0.9.5
+	github.com/tokenlive/tokenlive-gateway v0.9.7
 )
 
 require (
