@@ -6,7 +6,7 @@ ADMIN_WORKDIR ?= configs/admin
 ADMIN_CONFIG ?=
 ADMIN_STATIC ?=
 DATA_DIR ?= data
-VERSION ?= 0.9.6
+VERSION ?= 0.9.7
 
 build:
 	mkdir -p bin
