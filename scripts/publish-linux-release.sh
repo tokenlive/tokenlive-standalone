@@ -7,7 +7,7 @@
 # Flow:
 #   1. Resolve VERSION (from VERSION env, GITHUB_REF_NAME, or git tag)
 #   2. Clone gateway/admin at go.mod versions (or use siblings)
-#   3. Build admin frontend (once, shared across arches)
+#   3. Rebuild matching-version admin frontend for each release package
 #   4. Cross-compile linux/amd64 and linux/arm64, bake Linux FHS paths
 #   5. Create tarballs + sha256
 #   6. Upload to GitHub Release
@@ -73,6 +73,7 @@ export DEFAULT_ADMIN_DIR="/usr/share/tokenlive/admin"
 export DEFAULT_WEB_DIR="/usr/share/tokenlive/web"
 export CONFIG_FILE="config/linux.yml"
 export VERSION FORCE_WEB_BUILD
+export BUILD_KIND=release
 
 echo "==> publish linux release"
 echo "    version:  $VERSION  (tag $TAG)"
@@ -131,11 +132,7 @@ ls -lh "$TARBALL_AMD64"
 # --- build arm64 package -----------------------------------------------------
 echo "==> building linux/arm64 package"
 OUT_DIR_ARM64="$DIST_DIR/tokenlive-${VERSION}-linux-arm64"
-SKIP_WEB=1 TARGET_GOOS=linux TARGET_GOARCH=arm64 OUT_DIR="$OUT_DIR_ARM64" "$ROOT/scripts/package-release.sh"
-if [[ -d "$OUT_DIR_AMD64/share/tokenlive/web" ]]; then
-  mkdir -p "$OUT_DIR_ARM64/share/tokenlive/web"
-  rsync -a "$OUT_DIR_AMD64/share/tokenlive/web/" "$OUT_DIR_ARM64/share/tokenlive/web/"
-fi
+TARGET_GOOS=linux TARGET_GOARCH=arm64 OUT_DIR="$OUT_DIR_ARM64" "$ROOT/scripts/package-release.sh"
 TARBALL_ARM64="$DIST_DIR/$ASSET_ARM64"
 rm -f "$TARBALL_ARM64"
 tar -czf "$TARBALL_ARM64" -C "$OUT_DIR_ARM64" .

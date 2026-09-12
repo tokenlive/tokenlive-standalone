@@ -1,6 +1,8 @@
 package assemble_test
 
 import (
+	"encoding/json"
+	"os"
 	"path/filepath"
 	"slices"
 	"testing"
@@ -9,6 +11,47 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/tokenlive/tokenlive-standalone/internal/assemble"
 )
+
+func TestVersionUpdatesMenuResources(t *testing.T) {
+	type resource struct {
+		Method string `json:"method"`
+		Path   string `json:"path"`
+	}
+	type menu struct {
+		Code      string     `json:"code"`
+		Type      string     `json:"type"`
+		Status    string     `json:"status"`
+		Resources []resource `json:"resources"`
+	}
+	for _, name := range []string{"menu.json", "menu_cn.json"} {
+		t.Run(name, func(t *testing.T) {
+			data, err := os.ReadFile(filepath.Join("..", "..", "configs", "admin", name))
+			require.NoError(t, err)
+			var roots []struct {
+				Code     string `json:"code"`
+				Children []menu `json:"children"`
+			}
+			require.NoError(t, json.Unmarshal(data, &roots))
+			var matches []menu
+			for _, root := range roots {
+				if root.Code == "system" {
+					for _, child := range root.Children {
+						if child.Code == "versionUpdates" {
+							matches = append(matches, child)
+						}
+					}
+				}
+			}
+			require.Len(t, matches, 1, "system.versionUpdates must be available for role authorization")
+			require.Equal(t, "button", matches[0].Type)
+			require.Equal(t, "enabled", matches[0].Status)
+			require.Equal(t, []resource{
+				{Method: "GET", Path: "/api/v1/system/updates"},
+				{Method: "POST", Path: "/api/v1/system/updates/check"},
+			}, matches[0].Resources)
+		})
+	}
+}
 
 func TestValidateAllInOne(t *testing.T) {
 	v := viper.New()

@@ -688,6 +688,23 @@
         "status": "enabled",
         "children": [
             {
+                "code": "versionUpdates",
+                "name": "版本更新管理",
+                "sequence": 60,
+                "type": "button",
+                "status": "enabled",
+                "resources": [
+                    {
+                        "method": "GET",
+                        "path": "/api/v1/system/updates"
+                    },
+                    {
+                        "method": "POST",
+                        "path": "/api/v1/system/updates/check"
+                    }
+                ]
+            },
+            {
                 "code": "menu",
                 "name": "菜单管理",
                 "sequence": 90,

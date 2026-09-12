@@ -61,6 +61,10 @@ class UpdateHomebrewFormulaTest(unittest.TestCase):
             self.assertEqual(text.count(amd64_block), 1)
             self.assertEqual(text.count(arm64_block), 1)
             self.assertIn('libexec/"install-brew-config.sh"', text)
+            self.assertIn(
+                '(libexec/"tokenlive-install-channel").write("homebrew\\n")',
+                text,
+            )
             self.assertIn("config.yml.default", text)
 
     def test_rejects_duplicate_version_without_changing_formula(self):

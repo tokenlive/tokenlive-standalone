@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"github.com/tokenlive/tokenlive-admin/adminapp"
+	"github.com/tokenlive/tokenlive-admin/pkg/productversion"
 	gwconfig "github.com/tokenlive/tokenlive-gateway/pkg/config"
 	"github.com/tokenlive/tokenlive-gateway/pkg/gateway"
 	"github.com/tokenlive/tokenlive-gateway/pkg/log"
@@ -26,6 +27,10 @@ type Options struct {
 	AdminWorkDir   string
 	AdminConfigs   string
 	AdminStaticDir string
+
+	Version        string
+	BuildKind      string
+	InstallChannel string
 
 	Host string
 	Port int
@@ -114,12 +119,14 @@ func New(ctx context.Context, opt Options) (*App, error) {
 		keepNoRoute = &v // DisableNoRoute=false
 	}
 	var hub *confighub.Hub
+	identity := adminIdentity(opt.Version, opt.BuildKind, opt.InstallChannel)
 	adminApp, err := adminapp.New(ctx, adminapp.Options{
 		WorkDir:        opt.AdminWorkDir,
 		Configs:        opt.AdminConfigs,
 		StaticDir:      opt.AdminStaticDir,
 		Engine:         r,
 		DisableNoRoute: keepNoRoute,
+		Identity:       &identity,
 		OnConfigChanged: func(ctx context.Context, kind string, keys ...string) {
 			if hub == nil || app.Gateway == nil {
 				return
@@ -200,6 +207,14 @@ func New(ctx context.Context, opt Options) (*App, error) {
 	}
 
 	return app, nil
+}
+
+func adminIdentity(version, kind, channel string) productversion.Identity {
+	return productversion.Identity{
+		Edition:        "standalone",
+		InstallChannel: channel,
+		Build:          productversion.Build{Version: version, Kind: kind},
+	}
 }
 
 // ListenAndServe blocks until ctx is done, then shuts down gracefully.

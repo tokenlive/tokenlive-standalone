@@ -43,10 +43,11 @@ pkill -f "${PREFIX}/bin/tokenlive" 2>/dev/null || true
 
 echo "==> install into Cellar: $KEG"
 rm -rf "$PREFIX/Cellar/tokenlive"
-mkdir -p "$KEG/bin" "$KEG/share"
+mkdir -p "$KEG/bin" "$KEG/share" "$KEG/libexec"
 
 install -m 755 "$STAGE/bin/tokenlive" "$KEG/bin/tokenlive"
 rsync -a "$STAGE/share/tokenlive/" "$KEG/share/tokenlive/"
+printf 'homebrew\n' >"$KEG/libexec/tokenlive-install-channel"
 
 # Generate INSTALL_RECEIPT.json so Homebrew recognises tokenlive as an installed formula
 cat >"$KEG/INSTALL_RECEIPT.json" <<EOF

@@ -31,6 +31,7 @@ class Tokenlive < Formula
     (pkgshare/"web").mkpath
     (pkgshare/"web").install Dir["share/tokenlive/web/*"] if Dir["share/tokenlive/web/*"].any?
     libexec.install "libexec/install-brew-config.sh"
+    (libexec/"tokenlive-install-channel").write("homebrew\n")
 
     (etc/"tokenlive").mkpath
     system "bash",

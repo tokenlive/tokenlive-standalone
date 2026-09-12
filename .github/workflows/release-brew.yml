@@ -76,8 +76,10 @@ jobs:
           command -v gh
 
       - name: Publish brew release
+        id: publish
         env:
           VERSION: ${{ steps.meta.outputs.version }}
+          BUILD_KIND: release
           BREW_PREFIX: /opt/homebrew
           FORCE_WEB_BUILD: "1"
           GH_TOKEN: ${{ github.token }}
@@ -94,7 +96,7 @@ jobs:
           ./scripts/publish-brew-release.sh
 
       - name: Summary
-        if: always()
+        if: success() && steps.publish.outputs.homebrew_ready == 'true'
         run: |
           {
             echo "## Homebrew release"
@@ -156,6 +158,7 @@ jobs:
       - name: Build + upload linux tarballs
         env:
           VERSION: ${{ steps.meta.outputs.version }}
+          BUILD_KIND: release
           FORCE_WEB_BUILD: "1"
           GH_TOKEN: ${{ github.token }}
           GITHUB_TOKEN: ${{ github.token }}
@@ -209,7 +212,7 @@ jobs:
           echo "    $IMAGE:latest"
 
       - name: Summary
-        if: always()
+        if: success()
         run: |
           {
             echo "## Linux release"

@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"syscall"
 
 	"github.com/tokenlive/tokenlive-gateway/pkg/config"
@@ -19,6 +20,7 @@ import (
 // When set, `tokenlive` needs no CLI args for conf/data/admin/web paths.
 var (
 	version             = "dev"
+	buildKind           = "dev"
 	DefaultConfigPath   = ""
 	DefaultDataDir      = ""
 	DefaultAdminWorkDir = ""
@@ -125,12 +127,16 @@ func main() {
 		staticDir = assemble.DetectAdminStaticDir()
 	}
 
+	executable, _ := os.Executable()
 	app, err := assemble.New(ctx, assemble.Options{
 		GatewayConf:    v,
 		Logger:         logger,
 		AdminWorkDir:   workDir,
 		AdminConfigs:   adminCfg,
 		AdminStaticDir: staticDir,
+		Version:        version,
+		BuildKind:      buildKind,
+		InstallChannel: installedChannel(executable),
 	})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "assemble failed: %v\n", err)
@@ -147,6 +153,24 @@ func main() {
 		fmt.Fprintf(os.Stderr, "server error: %v\n", err)
 		os.Exit(1)
 	}
+}
+
+// installedChannel trusts only an installation marker beside the resolved
+// executable. Paths and operating systems alone do not identify Homebrew.
+func installedChannel(executable string) string {
+	if executable == "" {
+		return "unknown"
+	}
+	resolved, err := filepath.EvalSymlinks(executable)
+	if err != nil {
+		return "unknown"
+	}
+	marker := filepath.Join(filepath.Dir(filepath.Dir(resolved)), "libexec", "tokenlive-install-channel")
+	content, err := os.ReadFile(marker)
+	if err != nil || strings.TrimSuffix(string(content), "\n") != "homebrew" {
+		return "unknown"
+	}
+	return "homebrew"
 }
 
 func dirExists(p string) bool {

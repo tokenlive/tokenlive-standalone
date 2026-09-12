@@ -63,6 +63,7 @@ STANDALONE_REPO="${STANDALONE_REPO:-tokenlive/tokenlive-standalone}"
 DIST_DIR="$ROOT/dist"
 
 export VERSION FORCE_WEB_BUILD
+export BUILD_KIND=release
 
 echo "==> publish brew release"
 echo "    version:  $VERSION  (tag $TAG)"
@@ -124,11 +125,7 @@ ls -lh "$TARBALL_ARM64"
 # --- build amd64 package ---------------------------------------------------
 echo "==> building darwin/amd64 package (brew prefix: /usr/local)"
 OUT_DIR_AMD64="$DIST_DIR/tokenlive-${VERSION}-darwin-amd64"
-SKIP_WEB=1 TARGET_GOOS=darwin TARGET_GOARCH=amd64 BREW_PREFIX=/usr/local OUT_DIR="$OUT_DIR_AMD64" "$ROOT/scripts/package-release.sh"
-if [[ -d "$OUT_DIR_ARM64/share/tokenlive/web" ]]; then
-  mkdir -p "$OUT_DIR_AMD64/share/tokenlive/web"
-  rsync -a "$OUT_DIR_ARM64/share/tokenlive/web/" "$OUT_DIR_AMD64/share/tokenlive/web/"
-fi
+TARGET_GOOS=darwin TARGET_GOARCH=amd64 BREW_PREFIX=/usr/local OUT_DIR="$OUT_DIR_AMD64" "$ROOT/scripts/package-release.sh"
 TARBALL_AMD64="$DIST_DIR/$ASSET_AMD64"
 rm -f "$TARBALL_AMD64"
 tar -czf "$TARBALL_AMD64" -C "$OUT_DIR_AMD64" .
@@ -179,13 +176,20 @@ if gh release view "$TAG" --repo "$STANDALONE_REPO" >/dev/null 2>&1; then
   echo "    release exists — uploading/replacing assets"
   gh release upload "$TAG" "$TARBALL_ARM64" "$TARBALL_ARM64.sha256" "$TARBALL_AMD64" "$TARBALL_AMD64.sha256" \
     --repo "$STANDALONE_REPO" --clobber
-  gh release edit "$TAG" --repo "$STANDALONE_REPO" --notes "$notes" >/dev/null
+  # Linux may have created this Release as a draft. Publish only after the
+  # required macOS assets were uploaded, before the tap can reference them.
+  gh release edit "$TAG" --repo "$STANDALONE_REPO" --notes "$notes" --draft=false >/dev/null
 else
   gh release create "$TAG" "$TARBALL_ARM64" "$TARBALL_ARM64.sha256" "$TARBALL_AMD64" "$TARBALL_AMD64.sha256" \
     --repo "$STANDALONE_REPO" \
     --title "$TAG" \
     --notes "$notes"
 fi
+
+RELEASE_IS_DRAFT="$(gh release view "$TAG" --repo "$STANDALONE_REPO" --json isDraft -q .isDraft)" \
+  || die "cannot verify public release state for $TAG"
+[[ "$RELEASE_IS_DRAFT" == "false" ]] \
+  || die "release $TAG is not confirmed publicly published; refusing to update Homebrew tap"
 
 RELEASE_URL="$(gh release view "$TAG" --repo "$STANDALONE_REPO" --json url -q .url)"
 ASSET_URL_ARM64="https://github.com/${STANDALONE_REPO}/releases/download/${TAG}/${ASSET_ARM64}"
@@ -196,7 +200,7 @@ echo "    amd64 asset: $ASSET_URL_AMD64"
 
 # --- update homebrew tap -----------------------------------------------------
 if [[ "$SKIP_TAP" == "1" ]]; then
-  echo "==> SKIP_TAP=1 — done"
+  echo "==> SKIP_TAP=1 — release assets uploaded; Homebrew is not ready (tap was not updated)"
   exit 0
 fi
 
@@ -236,5 +240,8 @@ else
   echo "    pushed formula v${VERSION}"
 fi
 
-echo "==> done"
+echo "==> Homebrew ready: tap Formula is published"
 echo "    brew update && brew upgrade tokenlive"
+if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
+  echo "homebrew_ready=true" >> "$GITHUB_OUTPUT"
+fi

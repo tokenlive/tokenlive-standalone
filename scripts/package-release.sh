@@ -6,13 +6,15 @@
 # DEFAULT_CONF / DEFAULT_DATA / DEFAULT_ADMIN_DIR / DEFAULT_WEB_DIR
 #       — explicit path overrides (take precedence over BREW_PREFIX); used for Linux
 # CONFIG_FILE — source config copied to etc/tokenlive/config.yml (default: config/brew.yml)
-# VERSION / OUT_DIR / SKIP_WEB / FORCE_WEB_BUILD
+# VERSION / BUILD_KIND (default: dev) / OUT_DIR / SKIP_WEB / FORCE_WEB_BUILD
+# Release packages always rebuild the frontend, regardless of SKIP_WEB.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-VERSION="${VERSION:-0.9.9}"
+VERSION="${VERSION:-dev}"
+BUILD_KIND="${BUILD_KIND:-dev}"
 OUT_DIR="${OUT_DIR:-$ROOT/dist/tokenlive-${VERSION}}"
 GATEWAY_SRC="${TOKENLIVE_GATEWAY_SRC:-$ROOT/../tokenlive-gateway}"
 ADMIN_SRC="${TOKENLIVE_ADMIN_SRC:-$ROOT/../tokenlive-admin}"
@@ -21,6 +23,13 @@ BREW_PREFIX="${BREW_PREFIX:-}"
 CONFIG_FILE="${CONFIG_FILE:-config/brew.yml}"
 
 die() { echo "error: $*" >&2; exit 1; }
+
+[[ "$VERSION" != "latest" ]] || die "latest is an image alias, not a runtime version"
+if [[ "$BUILD_KIND" == "release" ]]; then
+  [[ "$VERSION" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]] \
+    || die "release requires a version, not an image alias: $VERSION"
+  [[ -f "$ADMIN_SRC/frontend/package.json" ]] || die "release requires admin frontend source"
+fi
 
 [[ -f "$GATEWAY_SRC/go.mod" ]] || die "gateway not found: $GATEWAY_SRC"
 [[ -f "$ADMIN_SRC/go.mod" ]] || die "admin not found: $ADMIN_SRC"
@@ -41,8 +50,8 @@ mkdir -p \
   "$OUT_DIR/share/tokenlive/web" \
   "$OUT_DIR/etc/tokenlive"
 
-if [[ "$SKIP_WEB" != "1" && -f "$ADMIN_SRC/frontend/package.json" ]]; then
-  if [[ ! -f "$ADMIN_SRC/frontend/dist/index.html" ]] || [[ "${FORCE_WEB_BUILD:-0}" == "1" ]]; then
+if [[ ( "$BUILD_KIND" == "release" || "$SKIP_WEB" != "1" ) && -f "$ADMIN_SRC/frontend/package.json" ]]; then
+  if [[ "$BUILD_KIND" == "release" || ! -f "$ADMIN_SRC/frontend/dist/index.html" || "${FORCE_WEB_BUILD:-0}" == "1" ]]; then
     echo "==> building admin frontend"
     ( cd "$ADMIN_SRC/frontend"
       [[ -d node_modules ]] || npm ci
@@ -84,6 +93,7 @@ fi
 LDFLAGS=(
   -s -w
   "-X main.version=${VERSION}"
+  "-X main.buildKind=${BUILD_KIND}"
 )
 [[ -n "$DEFAULT_CONF" ]] && LDFLAGS+=("-X main.DefaultConfigPath=${DEFAULT_CONF}")
 [[ -n "$DEFAULT_DATA" ]] && LDFLAGS+=("-X main.DefaultDataDir=${DEFAULT_DATA}")
@@ -92,6 +102,8 @@ LDFLAGS=(
 
 (
   cd "$BUILD_DIR"
+  # The package owns this disposable module graph, never the caller's go.work.
+  export GOWORK=off
   go mod edit -replace="github.com/tokenlive/tokenlive-gateway=${GATEWAY_SRC}"
   go mod edit -replace="github.com/tokenlive/tokenlive-admin=${ADMIN_SRC}"
   go mod tidy
