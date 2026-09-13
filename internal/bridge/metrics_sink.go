@@ -34,11 +34,15 @@ func toAdminMetric(m outbound.RequestMetric) adminmetrics.RequestMetric {
 		return out
 	}
 	out.Attempts = make([]struct {
-		EndpointID string `json:"endpoint_id"`
-		Success    bool   `json:"success"`
+		EndpointID   string `json:"endpoint_id"`
+		Provider     string `json:"provider,omitempty"`
+		ProviderCode string `json:"provider_code,omitempty"`
+		Success      bool   `json:"success"`
 	}, len(m.Attempts))
 	for i, a := range m.Attempts {
 		out.Attempts[i].EndpointID = a.EndpointID
+		out.Attempts[i].Provider = a.Provider
+		out.Attempts[i].ProviderCode = a.ProviderCode
 		out.Attempts[i].Success = a.Success
 	}
 	return out

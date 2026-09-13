@@ -43,8 +43,8 @@ Details: [docs/homebrew.md](docs/homebrew.md)
 One-line install (auto-detects arch, installs binary + config + systemd service):
 
 ```bash
-curl -fsSL https://github.com/tokenlive/tokenlive-standalone/releases/download/v0.9.11/tokenlive-0.9.11-linux-services.tar.gz | tar -xz
-sudo bin/install-linux.sh 0.9.11
+curl -fsSL https://github.com/tokenlive/tokenlive-standalone/releases/download/v0.9.12/tokenlive-0.9.12-linux-services.tar.gz | tar -xz
+sudo bin/install-linux.sh 0.9.12
 # http://127.0.0.1:2525  —  admin / admin
 ```
 
@@ -199,7 +199,7 @@ servers, clients and processes are cleaned up by the test.
 
 Use a temporary `go.work` for jointly testing reviewed local Admin/Gateway
 checkouts; do not commit workstation `replace` directives or workspaces.
-The declared dependencies (`tokenlive-admin v0.9.9` and `tokenlive-gateway v0.9.9`)
+The declared dependencies (`tokenlive-admin v0.9.10` and `tokenlive-gateway v0.9.10`)
 provide the official `pkg/productversion` and `pkg/versionreport` packages for
 version identity and upgrade notifications.
 
