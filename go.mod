@@ -8,8 +8,8 @@ require (
 	github.com/redis/go-redis/v9 v9.17.1
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
-	github.com/tokenlive/tokenlive-admin v0.9.10
-	github.com/tokenlive/tokenlive-gateway v0.9.10
+	github.com/tokenlive/tokenlive-admin v0.9.11
+	github.com/tokenlive/tokenlive-gateway v0.9.11
 	go.uber.org/zap v1.28.0
 )
 

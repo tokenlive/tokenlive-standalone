@@ -475,10 +475,10 @@ github.com/swaggo/gin-swagger v1.6.1/go.mod h1:LQ+hJStHakCWRiK/YNYtJOu4mR2FP+pxL
 github.com/swaggo/swag v1.16.6 h1:qBNcx53ZaX+M5dxVyTrgQ0PJ/ACK+NzhwcbieTt+9yI=
 github.com/swaggo/swag v1.16.6/go.mod h1:ngP2etMK5a0P3QBizic5MEwpRmluJZPHjXcMoj4Xesg=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
-github.com/tokenlive/tokenlive-admin v0.9.10 h1:S/3Gq5d6NOjpOzpUwd2XH42xjlgf03gL+1RdrN3ET4w=
-github.com/tokenlive/tokenlive-admin v0.9.10/go.mod h1:mpW48SVPk8E92092l+gb5vw/NHVC0qTZjC/8KXhAeeE=
-github.com/tokenlive/tokenlive-gateway v0.9.10 h1:sUVonuOoj9D46AXOq3QU9V6iXPUJQ8I/kMmv4VozQZw=
-github.com/tokenlive/tokenlive-gateway v0.9.10/go.mod h1:hieTwfUQvUVksLDi2i3OOkNU2DbgLZK2pYsOOXaemU4=
+github.com/tokenlive/tokenlive-admin v0.9.11 h1:mkxREQJbQuzBFPKTZLJBEAoZe/bX5OUKcYFSNbZx478=
+github.com/tokenlive/tokenlive-admin v0.9.11/go.mod h1:b3Lxc4nVu8OHCXqM5jrKgNS2LECp8uqyW5r0WyUvPsA=
+github.com/tokenlive/tokenlive-gateway v0.9.11 h1:IhSh6lIeGphz4fys5TgyBUS0EVEPEDIzwFuN4tp+6Nw=
+github.com/tokenlive/tokenlive-gateway v0.9.11/go.mod h1:hieTwfUQvUVksLDi2i3OOkNU2DbgLZK2pYsOOXaemU4=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
 github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljTbGfSG7qAOspJ7OScBnGdDN/yBr0sguwnwf0=
