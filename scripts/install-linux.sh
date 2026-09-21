@@ -4,7 +4,7 @@
 # Usage:
 #   ./install-linux.sh [VERSION] [TARBALL_DIR]
 #
-#   VERSION      — e.g. 0.9.13 (default: latest from GitHub releases)
+#   VERSION      — e.g. 1.0.0 (default: latest from GitHub releases)
 #   TARBALL_DIR  — directory containing the pre-downloaded tarball
 #                  (skips GitHub download)
 #

@@ -43,8 +43,8 @@ Details: [docs/homebrew.md](docs/homebrew.md)
 One-line install (auto-detects arch, installs binary + config + systemd service):
 
 ```bash
-curl -fsSL https://github.com/tokenlive/tokenlive-standalone/releases/download/v0.9.13/tokenlive-0.9.13-linux-services.tar.gz | tar -xz
-sudo bin/install-linux.sh 0.9.13
+curl -fsSL https://github.com/tokenlive/tokenlive-standalone/releases/download/v1.0.0/tokenlive-1.0.0-linux-services.tar.gz | tar -xz
+sudo bin/install-linux.sh 1.0.0
 # http://127.0.0.1:2525  —  admin / admin
 ```
 

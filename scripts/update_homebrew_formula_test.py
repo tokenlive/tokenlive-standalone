@@ -71,8 +71,8 @@ class UpdateHomebrewFormulaTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             formula = pathlib.Path(temp_dir) / "tokenlive.rb"
             original = CANONICAL.read_text().replace(
-                '  version "0.9.13"\n',
-                '  version "0.9.13"\n  version "0.8.0"\n',
+                '  version "1.0.0"\n',
+                '  version "1.0.0"\n  version "0.8.0"\n',
                 1,
             )
             formula.write_text(original)
@@ -93,11 +93,11 @@ class UpdateHomebrewFormulaTest(unittest.TestCase):
             architecture_block = (
                 "  if Hardware::CPU.intel?\n"
                 '    url "https://github.com/tokenlive/tokenlive-standalone/'
-                'releases/download/v0.9.13/tokenlive-0.9.13-darwin-amd64.tar.gz"\n'
+                'releases/download/v1.0.0/tokenlive-1.0.0-darwin-amd64.tar.gz"\n'
                 f'    sha256 "{"0" * 64}"\n'
                 "  else\n"
                 '    url "https://github.com/tokenlive/tokenlive-standalone/'
-                'releases/download/v0.9.13/tokenlive-0.9.13-darwin-arm64.tar.gz"\n'
+                'releases/download/v1.0.0/tokenlive-1.0.0-darwin-arm64.tar.gz"\n'
                 f'    sha256 "{"0" * 64}"\n'
                 "  end\n"
             )
