@@ -1,4 +1,4 @@
-.PHONY: build test run tidy smoke package package-linux brew-install brew-uninstall
+.PHONY: build test run tidy smoke package package-linux brew-install brew-uninstall work
 
 BINARY ?= bin/tokenlive
 CONF ?= config/all-in-one.example.yml
@@ -68,3 +68,13 @@ brew-start:
 
 brew-stop:
 	@brew services stop tokenlive 2>/dev/null || tokenlive-stop
+
+# Setup/update go.work for local multi-repo development
+work:
+	@if [ ! -f go.work ]; then \
+		go work init . ../tokenlive-admin ../tokenlive-gateway; \
+		go work edit -replace="google.golang.org/genproto=google.golang.org/genproto@v0.0.0-20240401170217-c3f982113cda"; \
+	else \
+		go work use . ../tokenlive-admin ../tokenlive-gateway; \
+	fi
+	@echo "go.work ready: tokenlive-standalone + tokenlive-admin + tokenlive-gateway"

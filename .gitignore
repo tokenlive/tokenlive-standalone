@@ -16,3 +16,5 @@
 /.agents/
 /.zcode/
 /.claude/
+go.work
+go.work.sum
