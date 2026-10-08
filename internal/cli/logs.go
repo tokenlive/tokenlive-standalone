@@ -22,6 +22,7 @@ import (
 // Info holds build-time and runtime default paths.
 type Info struct {
 	Version             string
+	BuildKind           string
 	DefaultConfigPath   string
 	DefaultDataDir      string
 	DefaultAdminWorkDir string

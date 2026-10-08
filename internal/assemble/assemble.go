@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/tokenlive/tokenlive-admin/adminapp"
 	"github.com/tokenlive/tokenlive-admin/pkg/productversion"
+	"github.com/tokenlive/tokenlive-admin/pkg/upgradehost"
 	gwconfig "github.com/tokenlive/tokenlive-gateway/pkg/config"
 	"github.com/tokenlive/tokenlive-gateway/pkg/gateway"
 	"github.com/tokenlive/tokenlive-gateway/pkg/log"
@@ -31,6 +32,9 @@ type Options struct {
 	Version        string
 	BuildKind      string
 	InstallChannel string
+	// DataDir is the mutable data directory; its parent hosts the upgrade
+	// task store when click upgrade is supported.
+	DataDir string
 
 	Host string
 	Port int
@@ -97,8 +101,17 @@ func New(ctx context.Context, opt Options) (*App, error) {
 
 	r := gin.New()
 	r.Use(gin.Recovery())
+	executable, _ := os.Executable()
 	r.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "ok", "mode": "all-in-one"})
+		// version/executable back the upgrade worker's success handshake:
+		// a bare 200 proves nothing about which build is actually serving.
+		c.JSON(http.StatusOK, gin.H{
+			"status":          "ok",
+			"mode":            "all-in-one",
+			"version":         opt.Version,
+			"install_channel": opt.InstallChannel,
+			"executable":      executable,
+		})
 	})
 
 	// Friendly root when SPA is not mounted (static middleware owns "/" when present).
@@ -120,6 +133,12 @@ func New(ctx context.Context, opt Options) (*App, error) {
 	}
 	var hub *confighub.Hub
 	identity := adminIdentity(opt.Version, opt.BuildKind, opt.InstallChannel)
+	var hostUpgrade upgradehost.Host
+	if opt.InstallChannel == "homebrew" {
+		if mgr := newUpgradeManager(opt, portFor(opt)); mgr != nil {
+			hostUpgrade = mgr
+		}
+	}
 	adminApp, err := adminapp.New(ctx, adminapp.Options{
 		WorkDir:        opt.AdminWorkDir,
 		Configs:        opt.AdminConfigs,
@@ -127,6 +146,7 @@ func New(ctx context.Context, opt Options) (*App, error) {
 		Engine:         r,
 		DisableNoRoute: keepNoRoute,
 		Identity:       &identity,
+		HostUpgrade:    hostUpgrade,
 		OnConfigChanged: func(ctx context.Context, kind string, keys ...string) {
 			if hub == nil || app.Gateway == nil {
 				return

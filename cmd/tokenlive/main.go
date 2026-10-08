@@ -30,6 +30,7 @@ var (
 func main() {
 	info := cli.Info{
 		Version:             version,
+		BuildKind:           buildKind,
 		DefaultConfigPath:   DefaultConfigPath,
 		DefaultDataDir:      DefaultDataDir,
 		DefaultAdminWorkDir: DefaultAdminWorkDir,
@@ -42,6 +43,15 @@ func main() {
 			os.Exit(cli.RunLogs(info, os.Args[2:]))
 		case "status", "-status", "--status":
 			os.Exit(cli.RunStatus(info, os.Args[2:]))
+		case "upgrade-status":
+			// Diagnostics stay available while the service is down: no
+			// business config, DB or HTTP initialization happens here.
+			os.Exit(cli.RunUpgradeStatus(info, os.Args[2:]))
+		case "upgrade-worker":
+			// One-shot launchd job entry. Must be dispatched before any
+			// business configuration loading; the copied executor may be
+			// the only surviving copy of the old version.
+			os.Exit(cli.RunUpgradeWorker(info, os.Args[2:]))
 		}
 	}
 
@@ -137,6 +147,7 @@ func main() {
 		Version:        version,
 		BuildKind:      buildKind,
 		InstallChannel: installedChannel(executable),
+		DataDir:        *dataDir,
 	})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "assemble failed: %v\n", err)
