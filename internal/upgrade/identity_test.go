@@ -27,7 +27,7 @@ func syntheticInstall(t *testing.T) (string, string) {
 		filepath.Join(prefix, "bin"),
 		filepath.Join(prefix, "opt"),
 		filepath.Join(keg, "bin"),
-		filepath.Join(prefix, "libexec"),
+		filepath.Join(keg, "libexec"),
 		filepath.Join(prefix, "Library", "Taps", "tokenlive", "homebrew-tokenlive", "Formula"),
 		filepath.Join(home, "Library", "LaunchAgents"),
 	} {
@@ -42,7 +42,7 @@ func syntheticInstall(t *testing.T) (string, string) {
 	}
 	write(filepath.Join(prefix, "bin", "brew"), "#!/bin/bash\n")
 	write(filepath.Join(keg, "bin", "tokenlive"), "binary")
-	write(filepath.Join(prefix, "libexec", "tokenlive-install-channel"), "homebrew\n")
+	write(filepath.Join(keg, "libexec", "tokenlive-install-channel"), "homebrew\n")
 	write(filepath.Join(prefix, "Library", "Taps", "tokenlive", "homebrew-tokenlive", "Formula", "tokenlive.rb"), testFormula)
 	if err := os.Symlink(keg, filepath.Join(prefix, "opt", "tokenlive")); err != nil {
 		t.Fatal(err)
@@ -161,6 +161,23 @@ func TestProbeRejectsBrokenIdentity(t *testing.T) {
 		prober.UID, prober.EUID = 0, 0
 		if _, reasons := prober.Probe(2525, productversion.Build{}); len(reasons) == 0 || reasons[0] != "user_context_unsupported" {
 			t.Fatalf("expected user_context_unsupported, got %v", reasons)
+		}
+	})
+
+	t.Run("prefix marker is not the keg marker", func(t *testing.T) {
+		prefix, home := base()
+		keg := filepath.Join(prefix, "Cellar", "tokenlive", "1.0.0")
+		if err := os.Remove(filepath.Join(keg, "libexec", "tokenlive-install-channel")); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.MkdirAll(filepath.Join(prefix, "libexec"), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(prefix, "libexec", "tokenlive-install-channel"), []byte("homebrew\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if _, reasons := testProber(prefix, home).Probe(2525, productversion.Build{}); len(reasons) == 0 || reasons[0] != "install_unsupported" {
+			t.Fatalf("expected install_unsupported, got %v", reasons)
 		}
 	})
 

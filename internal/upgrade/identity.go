@@ -107,7 +107,9 @@ func (p Prober) Probe(port int, current productversion.Build) (*Installation, []
 		return fail("install_unsupported")
 	}
 	prefix := filepath.Dir(filepath.Dir(filepath.Dir(keg)))
-	marker := filepath.Join(prefix, "libexec", "tokenlive-install-channel")
+	// Formula writes the marker with Homebrew's libexec, which is the keg's
+	// libexec, not <prefix>/libexec. A prefix-level file is not this install.
+	marker := filepath.Join(keg, "libexec", "tokenlive-install-channel")
 	if content, err := os.ReadFile(marker); err != nil || strings.TrimSpace(string(content)) != "homebrew" {
 		return fail("install_unsupported")
 	}
