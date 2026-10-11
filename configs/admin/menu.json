@@ -705,6 +705,31 @@
                 ]
             },
             {
+                "code": "versionUpgrades",
+                "name": "Standalone upgrade execution",
+                "sequence": 61,
+                "type": "button",
+                "status": "enabled",
+                "resources": [
+                    {
+                        "method": "GET",
+                        "path": "/api/v1/system/upgrade/capability"
+                    },
+                    {
+                        "method": "POST",
+                        "path": "/api/v1/system/upgrade/prepare"
+                    },
+                    {
+                        "method": "POST",
+                        "path": "/api/v1/system/upgrade/submit"
+                    },
+                    {
+                        "method": "GET",
+                        "path": "/api/v1/system/upgrade/task"
+                    }
+                ]
+            },
+            {
                 "code": "menu",
                 "name": "Menu",
                 "sequence": 90,
@@ -920,7 +945,7 @@
                 "sequence": 75,
                 "type": "page",
                 "path": "/system/tenant",
-                "status": "disabled",
+                "status": "enabled",
                 "children": [
                     {
                         "code": "add",
@@ -1002,7 +1027,7 @@
                 "sequence": 10,
                 "type": "page",
                 "path": "/system/logger",
-                "status": "disabled",
+                "status": "enabled",
                 "resources": [
                     {
                         "method": "GET",
@@ -1235,6 +1260,14 @@
                             {
                                 "method": "PUT",
                                 "path": "/api/v1/models/{id}"
+                            },
+                            {
+                                "method": "PUT",
+                                "path": "/api/v1/models/{id}/smart-routing"
+                            },
+                            {
+                                "method": "PUT",
+                                "path": "/api/v1/models/{id}/enabled"
                             },
                             {
                                 "method": "PUT",
