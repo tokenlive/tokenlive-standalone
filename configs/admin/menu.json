@@ -16,8 +16,8 @@
                 "status": "enabled",
                 "resources": [
                     {
-                        "method": "GET",
-                        "path": "/api/v1/dashboard/qps"
+                        "method": "POST",
+                        "path": "/api/v1/dashboard/snapshot"
                     },
                     {
                         "method": "GET",
@@ -25,23 +25,11 @@
                     },
                     {
                         "method": "GET",
-                        "path": "/api/v1/dashboard/metrics"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/dashboard/trends"
+                        "path": "/api/v1/dashboard/usage-trends"
                     },
                     {
                         "method": "POST",
                         "path": "/api/v1/dashboard/sync-redis"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/dashboard/model-ranking"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/dashboard/overview"
                     },
                     {
                         "method": "GET",

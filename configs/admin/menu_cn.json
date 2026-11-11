@@ -17,31 +17,19 @@
                 "resources": [
                     {
                         "method": "GET",
-                        "path": "/api/v1/dashboard/qps"
+                        "path": "/api/v1/dashboard/usage-trends"
+                    },
+                    {
+                        "method": "POST",
+                        "path": "/api/v1/dashboard/snapshot"
                     },
                     {
                         "method": "GET",
                         "path": "/api/v1/dashboard/circuit-breakers"
                     },
                     {
-                        "method": "GET",
-                        "path": "/api/v1/dashboard/metrics"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/dashboard/trends"
-                    },
-                    {
                         "method": "POST",
                         "path": "/api/v1/dashboard/sync-redis"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/dashboard/model-ranking"
-                    },
-                    {
-                        "method": "GET",
-                        "path": "/api/v1/dashboard/overview"
                     },
                     {
                         "method": "GET",
