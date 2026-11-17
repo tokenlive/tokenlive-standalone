@@ -3,7 +3,7 @@
 
 [General]
 AppName = "tokenlive"
-Version = "v1.0.4"
+Version = "v1.0.5"
 Debug = true
 PprofAddr = ""
 DisableSwagger = true
@@ -101,6 +101,8 @@ Password = ""
 UserCacheExp = 4
 
 [Gateway]
+# Keep disabled until all serving Gateways support format 2 and rollout checks pass.
+CompositeRoutingV2 = false
 APIKeyPepper = "${GATEWAY_API_KEY_PEPPER:}"
 
 [OAuth]

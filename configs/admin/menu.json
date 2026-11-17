@@ -1337,6 +1337,10 @@
                     {
                         "method": "GET",
                         "path": "/api/v1/data-permissions/{id}"
+                    },
+                    {
+                        "method": "POST",
+                        "path": "/api/v1/models/{id}/route-preview"
                     }
                 ]
             },
