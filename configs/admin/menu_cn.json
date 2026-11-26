@@ -1324,6 +1324,22 @@
                     },
                     {
                         "method": "GET",
+                        "path": "/api/v1/policy/policy-dialects"
+                    },
+                    {
+                        "method": "POST",
+                        "path": "/api/v1/policy/policy-dialects"
+                    },
+                    {
+                        "method": "PUT",
+                        "path": "/api/v1/policy/policy-dialects/{id}/enabled"
+                    },
+                    {
+                        "method": "DELETE",
+                        "path": "/api/v1/policy/policy-dialects/{id}"
+                    },
+                    {
+                        "method": "GET",
                         "path": "/api/v1/model-aliases"
                     },
                     {
