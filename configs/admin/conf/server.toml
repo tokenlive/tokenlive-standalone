@@ -3,7 +3,7 @@
 
 [General]
 AppName = "tokenlive"
-Version = "v1.0.6"
+Version = "v1.0.7"
 Debug = true
 PprofAddr = ""
 DisableSwagger = true
